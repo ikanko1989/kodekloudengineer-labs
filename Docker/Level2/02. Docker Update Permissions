@@ -1,0 +1,92 @@
+One of the Nautilus project developers need access to run docker commands on App Server 2. This user is already created on the server. Accomplish this task as per details given below:
+User javed is not able to run docker commands on App Server 2 in Stratos DC, make the required changes so that this user can run docker commands without sudo.
+
+
+group docker:
+The docker group in Linux is a user group associated with the Docker daemon. Users who are members of the docker group have the privilege to interact with the Docker daemon, which allows them to run Docker commands without needing to use sudo or providing the root password.
+When a user is added to the docker group, they gain the necessary permissions to execute Docker commands, such as running and managing containers. This is a convenient way to grant Docker access to users without requiring elevated privileges.
+
+
+List of users:
+cat /etc/group 
+
+[steve@stapp02 ~]$ cat /etc/group | grep javed
+javed:x:1002:
+
+[steve@stapp02 ~]$ getent group docker
+docker:x:995:steve
+
+
+To allow the user "javed" to run Docker commands without sudo, you can add the user to the "docker" group. Here's how you can do it:
+sudo usermod -aG docker javed
+This command adds the user "javed" to the "docker" group, which grants the necessary permissions to run Docker commands. After running this command, the user might need to log out and log back in or restart their shell session for the changes to take effect.
+Make sure to inform the user "javed" about the changes, and they should be able to run Docker commands without sudo.
+
+The getent group docker command is used to query information about the "docker" group from the system's databases. In this case, it returns information about the "docker" group, including its group ID (GID), and a list of users who are members of that group.
+The output docker:x:995:steve,javed can be interpreted as follows:
+	• docker: The name of the group.
+	• x: Typically, this field contains a placeholder for the group password, but it is often set to "x" to indicate that the password is stored in the /etc/shadow file.
+	• 995: The group ID (GID) assigned to the "docker" group.
+	• steve,javed: A comma-separated list of users who are members of the "docker" group. In this case, both "steve" and "javed" are members.
+So, based on this output, both "steve" and "javed" are members of the "docker" group, and they have the associated privileges to run Docker commands without using sudo.
+
+
+
+
+[steve@stapp02 ~]$ getent group docker
+docker:x:995:steve
+[steve@stapp02 ~]$ sudo usermod -aG docker javed
+
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+
+[sudo] password for steve: 
+
+[steve@stapp02 ~]$ getent group docker
+docker:x:995:steve,javed
+
+[steve@stapp02 ~]$ cat /etc/group | grep javed
+docker:x:995:steve,javed
+
+
+steve@stapp02 ~]$ groups javed
+javed : javed docker
+
+
+The sudo usermod -aG docker javed command performs the following actions:
+	• sudo: It's a command that allows a permitted user to execute a command as the superuser (or another user), as specified by the security policy.
+	• usermod: It's a command used for modifying user account properties.
+	• -aG docker: This part adds the user to the specified groups. In this case, it adds the user "javed" to the "docker" group.
+
+[steve@stapp02 ~]$ sudo passwd javed
+[sudo] password for steve: 
+Changing password for user javed.
+New password: 
+BAD PASSWORD: The password is a palindrome
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+
+[steve@stapp02 ~]$ su - javed
+Password: 
+Last failed login: Thu Nov  9 09:42:27 UTC 2023 on pts/0
+There were 8 failed login attempts since the last successful login.
+[javed@stapp02 ~]$ docker run hello-world
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
