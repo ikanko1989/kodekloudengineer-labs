@@ -1,0 +1,130 @@
+The Nautilus application development team was working on a git repository /usr/src/kodekloudrepos/cluster present on Storage server in Stratos DC. This was just a test repository and one of the developers just pushed a couple of changes for testing, but now they want to clean this repository along with the commit history/work tree, so they want to point back the HEAD and the branch itself to a commit with message add data.txt file.  Find below more details:
+	1. In /usr/src/kodekloudrepos/cluster git repository, reset the git commit history so that there are only two commits in the commit history i.e initial commit and add data.txt file.
+	2. Also make sure to push your changes.
+
+
+thor@jump_host ~$ ssh natasha@172.16.238.15
+The authenticity of host '172.16.238.15 (172.16.238.15)' can't be established.
+ECDSA key fingerprint is SHA256:wX0AjVGRs66LnhbVCpQ1m1xX1ks0LqzkYTL0ACvfqGA.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes  
+Warning: Permanently added '172.16.238.15' (ECDSA) to the list of known hosts.
+natasha@172.16.238.15's password: 
+[natasha@ststor01 ~]$ sudo su
+ 
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+ 
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+ 
+[sudo] password for natasha: 
+[root@ststor01 natasha]# cd /usr/src/kodekloudrepos/blog
+[root@ststor01 blog]# git log --oneline
+4d13737 (HEAD -> master, origin/master) Test Commit10
+973a0cf Test Commit9
+f4e7177 Test Commit8
+5ae2994 Test Commit7
+2b87327 Test Commit6
+449775e Test Commit5
+7d89d33 Test Commit4
+d6787b5 Test Commit3
+5486729 Test Commit2
+acc5f6a Test Commit1
+a18eb7c add data.txt file
+f0cf057 initial commit
+[root@ststor01 blog]# git log 
+commit 4d137374afa298c429b43320d1183ea8a6ec170f (HEAD -> master, origin/master)
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:36 2024 +0000
+ 
+    Test Commit10
+ 
+commit 973a0cfaf23d168797700f0a3b3024a97de54795
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:36 2024 +0000
+ 
+    Test Commit9
+ 
+commit f4e71778e243816626f369026fb32253b95ce3f5
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:36 2024 +0000
+ 
+    Test Commit8
+ 
+commit 5ae29946ec693f149950dec5c926e8cdb64dd0fa
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:36 2024 +0000
+ 
+    Test Commit7
+ 
+commit 2b87327ab60608bf4ebc4b84ce4a3d66618b8d5c
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:35 2024 +0000
+ 
+    Test Commit6
+ 
+commit 449775ee5592836ca979ae50077737e4168b07e4
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:35 2024 +0000
+ 
+    Test Commit5
+ 
+commit 7d89d33b361b50321c6e1a39b42d0f297e2355b4
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:35 2024 +0000
+ 
+    Test Commit4
+ 
+commit d6787b5498b6800ce024453cefe71f0faddbd947
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:35 2024 +0000
+ 
+    Test Commit3
+ 
+commit 54867297832ce9cd6b88e71e4b20f8db331f5826
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:35 2024 +0000
+ 
+    Test Commit2
+ 
+commit acc5f6a832488152cbae63d406c60d1b3382d801
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:35 2024 +0000
+ 
+    Test Commit1
+ 
+commit a18eb7c1e0050098b541a3cd51882f58fa5dbecb
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:35 2024 +0000
+ 
+    add data.txt file
+ 
+commit f0cf05746f398f651fd5f06c06e57ed048329f0b
+Author: Admin <admin@kodekloud.com>
+Date:   Mon Apr 15 11:59:35 2024 +0000
+ 
+    initial commit
+[root@ststor01 blog]# git reset --hard HEAD~10
+HEAD is now at a18eb7c add data.txt file
+[root@ststor01 blog]# 
+[root@ststor01 blog]# git log --oneline
+a18eb7c (HEAD -> master) add data.txt file
+f0cf057 initial commit
+
+[root@ststor01 blog]# git pull origin master
+Then;
+[root@ststor01 blog]# git push origin master
+
+OR: 
+
+[root@ststor01 blog]# git push origin master --force
+Total 0 (delta 0), reused 0 (delta 0), pack-reused 0
+To /opt/blog.git
++ 4d13737...a18eb7c master -> master (forced update)
+[root@ststor01 blog]# 
+[root@ststor01 blog]# 
+[root@ststor01 blog]# git log --oneline
+a18eb7c (HEAD -> master, origin/master) add data.txt file
+f0cf057 initial commit
+[root@ststor01 blog]#
