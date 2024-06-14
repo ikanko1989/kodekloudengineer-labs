@@ -1,0 +1,75 @@
+As per recent requirements shared by the Nautilus application development team, they need custom images created for one of their projects. Several of the initial testing requirements are already been shared with DevOps team. Therefore, create a docker file /opt/docker/Dockerfile (please keep D capital of Dockerfile) on App server1 in Stratos DC and configure to build an image with the following requirements:
+a. Use ubuntu as the base image.
+b. Install apache2 and configure it to work on 5002 port. (do not update any other Apache configuration settings like document root etc).
+ (do not update any other Apache configuration settings like document root etc).
+
+[root@stapp01 docker]# cat Dockerfile 
+FROM ubuntu
+EXPOSE 5002
+RUN apt-get update && apt-get install -y apache2
+RUN sed -i 's/Listen 80/Listen 5002/g' /etc/apache2/ports.conf
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+
+[root@stapp01 docker]#docker built . -t customimage2
+
+[root@stapp01 docker]# docker images
+REPOSITORY          TAG                 IMAGE ID                  CREATED             SIZE
+customimage2      latest              034be1062656        9 seconds ago      232MB
+ubuntu                   latest               e4c58958181a        5 weeks ago         77.8MB
+
+
+[root@stapp01 docker]# docker run -p 5002:5002 customimage2 
+FYI: docker run -p host_port: container_port customimage2 ,exposes container port 5002 on host port 5002
+
+[root@stapp01 tony]# docker ps -a
+CONTAINER ID        IMAGE                              COMMAND                  CREATED                   STATUS                                      PORTS                                 NAMES
+84b226923c9d        customimage2        "apache2ctl -D FOREG…"   About a minute ago   Up About a minute          0.0.0.0:5002->5002/tcp   happy_meninsky
+
+root@84b226923c9d:/# cat /etc/apache2/ports.conf 
+# If you just change the port or add more ports here, you will likely also
+# have to change the VirtualHost statement in
+# /etc/apache2/sites-enabled/000-default.conf
+
+Listen 5002
+
+<IfModule ssl_module>
+        Listen 443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+        Listen 443
+</IfModule>
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+root@84b226923c9d:/# 
+
+
+
+[root@stapp01 tony]# curl http://localhost:5002
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!--
+    Modified from the Debian original for Ubuntu
+    Last updated: 2022-03-22
+    See: https://launchpad.net/bugs/1966004
+  -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Apache2 Ubuntu Default Page: It works</title>
+    <style type="text/css" media="screen">
+
+[root@stapp01 tony]# docker exec -it 84b226923c9d /bin/bash
+root@84b226923c9d:/# apt install curl
+
+
+
+root@84b226923c9d:/# curl http://localhost:5002
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!--
+    Modified from the Debian original for Ubuntu
+    Last updated: 2022-03-22
+    See: https://launchpad.net/bugs/1966004
+  -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; cha
