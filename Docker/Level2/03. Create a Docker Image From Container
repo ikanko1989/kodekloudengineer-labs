@@ -1,0 +1,20 @@
+One of the Nautilus developer was working to test new changes on a container. He wants to keep a backup of his changes to the container. A new request has been raised for the DevOps team to create a new image from this container. Below are more details about it:
+Create an image beta:xfusion on Application Server 2 from a container ubuntu_latest that is running on same server.
+
+
+[steve@stapp02 ~]$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+ubuntu              latest              e4c58958181a        5 weeks ago         77.8MB
+
+
+[steve@stapp02 ~]$ docker ps -a
+CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS               NAMES
+1e0fd08549ce        ubuntu              "/bin/bash"         About a minute ago   Up About a minute                       ubuntu_latest
+
+[steve@stapp02 ~]$ docker commit ubuntu_latest beta:xfusion
+sha256:bb66eca25474762427c3edef9f6f055b40073b81af70dcfd10aa457f0d522266
+
+[steve@stapp02 ~]$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+beta                xfusion             bb66eca25474        2 seconds ago       124MB
+ubuntu              latest              e4c58958181a        5 weeks ago         77.8MB
