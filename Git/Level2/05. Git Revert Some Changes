@@ -1,0 +1,74 @@
+The Nautilus application development team was working on a git repository /usr/src/kodekloudrepos/media present on Storage server in Stratos DC. However, they reported an issue with the recent commits being pushed to this repo. They have asked the DevOps team to revert repo HEAD to last commit. Below are more details about the task:
+	1. In /usr/src/kodekloudrepos/meida git repository, revert the latest commit ( HEAD ) to the previous commit (JFYI the previous commit hash should be with initial commit message ).
+	2. Use revert media message (please use all small letters for commit message) for the new revert commit.
+
+
+[root@ststor01 natasha]# cd /usr/src/kodekloudrepos/media 
+[root@ststor01 media]# ls
+media.txt
+[root@ststor01 media]# git status
+On branch master
+Your branch is up to date with 'origin/master'.
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        media.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+[root@ststor01 media]# git log
+commit 47c766cd7fbd6630d1dd107a16dfe01981c5cc0d (HEAD -> master, origin/master)
+Author: Admin <admin@kodekloud.com>
+Date:   Fri Apr 12 11:00:11 2024 +0000
+ 
+    add data.txt file
+ 
+commit 172f86bfc206b68545d43d90812fb4bdd9bffaf2
+Author: Admin <admin@kodekloud.com>
+Date:   Fri Apr 12 11:00:11 2024 +0000
+ 
+    initial commit
+ 
+[root@ststor01 media]# git revert 47c766c
+[master 1164615] Revert "add data.txt file"
+1 file changed, 1 insertion(+)
+create mode 100644 info.txt
+
+ 
+[root@ststor01 media]# git log --oneline
+1164615 (HEAD -> master) Revert "add data.txt file"
+47c766c (origin/master) add data.txt file
+172f86b initial commit
+
+root@ststor01 media]# git add media.txt 
+
+[root@ststor01 media]# git status
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+ 
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   media.txt
+ 
+[root@ststor01 media]# git commit -m "revert media"
+[master 32e8d16] revert media
+1 file changed, 1 insertion(+)
+create mode 100644 media.txt
+
+[root@ststor01 media]# git push origin master
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
+Delta compression using up to 36 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (6/6), 572 bytes | 572.00 KiB/s, done.
+Total 6 (delta 0), reused 0 (delta 0), pack-reused 0
+To /opt/media.git
+   47c766c..32e8d16  master -> master
+
+[root@ststor01 media]# git log --oneline
+32e8d16 (HEAD -> master, origin/master) revert media
+1164615 Revert "add data.txt file"
+47c766c add data.txt file
+172f86b initial commit
+[root@ststor01 media]#
+has context menuComposeParagraph
