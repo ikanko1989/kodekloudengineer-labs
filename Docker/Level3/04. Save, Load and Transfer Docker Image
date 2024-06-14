@@ -1,0 +1,33 @@
+One of the DevOps team members was working on to create a new custom docker image on App Server 1 in Stratos DC. He is done with his changes and image is saved on same server with name cluster:datacenter. Recently a requirement has been raised by a team to use that image for testing, but the team wants to test the same on App Server 3. So we need to provide them that image on App Server 3 in Stratos DC.
+a. On App Server 1 save the image cluster:datacenter in an archive.
+b. Transfer the image archive to App Server 3.
+c. Load that image archive on App Server 3 with same name and tag which was used on App Server 1.
+Note: Docker is already installed on both servers; however, if its service is down please make sure to start it.
+
+
+[tony@stapp01 ~]$ docker save --output  cluster_datacenter.tar  cluster:datacenter 
+[tony@stapp01 ~]$ ls
+cluster_datacenter.tar
+
+[tony@stapp01 ~]$ scp cluster_datacenter.tar banner@172.16.238.12:
+The authenticity of host '172.16.238.12 (172.16.238.12)' can't be established.
+ECDSA key fingerprint is SHA256:NjO8SPWsR4kv6l/aZ45A2N5R9FaMeGo+ah24q/o/0zM.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '172.16.238.12' (ECDSA) to the list of known hosts.
+banner@172.16.238.12's password: 
+Permission denied, please try again.
+banner@172.16.238.12's password: 
+cluster_datacenter.tar                                                                                                    100%  120MB  86.1MB/s   00:01    
+[tony@stapp01 ~]$ 
+
+[banner@stapp03 ~]$ ls
+cluster_datacenter.tar
+
+[banner@stapp03 ~]$ docker load -i cluster_datacenter.tar 
+256d88da4185: Loading layer [==================================================>]  80.35MB/80.35MB
+db318e555a22: Loading layer [==================================================>]  45.78MB/45.78MB
+Loaded image: cluster:datacenter
+[banner@stapp03 ~]$ 
+[banner@stapp03 ~]$ docker image list
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+cluster             datacenter          96d432de4d72        11 minutes ago      124MB
