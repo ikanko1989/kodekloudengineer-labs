@@ -1,0 +1,15 @@
+Pull busybox:musl image on App Server 1 in Stratos DC and re-tag (create new tag) this image as busybox:local.
+
+[tony@stapp01 ~]$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+busybox             musl                46425a867adf        3 months ago        1.41MB
+
+[tony@stapp01 ~]$ docker tag busybox:musl busybox:local
+[tony@stapp01 ~]$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+busybox             local                 46425a867adf        3 months ago        1.41MB
+busybox             musl                46425a867adf       3 months ago        1.41MB
+
+
+
+
