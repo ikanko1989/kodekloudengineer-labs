@@ -1,0 +1,9 @@
+The Nautilus application development team was working on a git repository /usr/src/kodekloudrepos/cluster present on Storage server in Stratos DC. One of the developers mistakenly created a couple of files under this repository, but now they want to clean this repository without adding/pushing any new files. Find below more details:
+Clean the /usr/src/kodekloudrepos/cluster git repository without adding/pushing any new files, make sure git status is clean.
+ 
+[root@ststor01 official]# git clean -df          (NOTE:d is for directories and f for files)
+[root@ststor01 official]# git status
+On branch master
+Your branch is up to date with 'origin/master'.
+nothing to commit, working tree clean
+
