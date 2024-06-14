@@ -1,0 +1,32 @@
+a. Pull nginx:alpine-perl docker image on Application Server 2.
+b. Create a container named ecommerce using the image you pulled.
+c. Map host port 3003 to container port 80. Please keep the container in running state.
+
+
+steve@stapp02 ~]$ docker pull nginx:alpine-perl
+alpine-perl: Pulling from library/nginx
+96526aa774ef: Pull complete 
+740091335c74: Pull complete 
+da9c2e764c5b: Pull complete 
+ade17ad21ef4: Pull complete 
+4e6f462c8a69: Pull complete 
+1324d9977cd2: Pull complete 
+1b9b96da2c74: Pull complete 
+153aef7ca07f: Pull complete 
+a62fda4d68d9: Pull complete 
+Digest: sha256:04821c737c095fe45b14c393d6185d080d17d86af5a7db3262ab763ae80804de
+Status: Downloaded newer image for nginx:alpine-perl
+docker.io/library/nginx:alpine-perl
+
+[steve@stapp02 ~]$ docker image list
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+nginx               alpine-perl         12551befe591        3 weeks ago         83.2MB
+
+
+[steve@stapp02 ~]$ docker run -d --name ecommerce -p 3003:80 nginx:alpine-perl
+407c1bf8301a7322da0d7fc9b9ff31be642289e772b3eaf518c0f22f26bbca0b
+
+[steve@stapp02 ~]$ docker ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES
+407c1bf8301a        nginx:alpine-perl   "/docker-entrypoint.…"   6 seconds ago       Up 4 seconds        0.0.0.0:3003->80/tcp   ecommerce
+
