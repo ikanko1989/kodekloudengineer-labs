@@ -1,0 +1,79 @@
+The Nautilus DevOps team is working to create new images per requirements shared by the development team. One of the team members is working to create a Dockerfile on App Server 2 in Stratos DC. While working on it she ran into issues in which the docker build is failing and displaying errors. Look into the issue and fix it to build an image as per details mentioned below:
+a. The Dockerfile is placed on App Server 1 under /opt/docker directory.
+b. Fix the issues with this file and make sure it is able to build the image.
+c. Do not change base image, any other valid configuration within Dockerfile, or any of the data been used — for example, index.html.
+Note: Please note that once you click on FINISH button all existing images, the containers will be destroyed and new image will be built from your Dockerfile.
+
+FYI
+ADD: This command copies files, directories, or remote URLs from a source to the container's filesystem at the specified destination. 
+However, it's advised to use COPY instead of ADD when copying local files, 
+RUN: This command executes shell commands in the container during image build.
+
+
+IMAGE httpd:2.4.43
+ADD sed -i "s/Listen 80/Listen 8080/g" /usr/local/apache2/conf/httpd.conf
+ADD sed -i '/LoadModule\ ssl_module modules\/mod_ssl.so/s/^#//g' conf/httpd.conf
+ADD sed -i '/LoadModule\ socache_shmcb_module modules\/mod_socache_shmcb.so/s/^#//g' conf/httpd.conf
+ADD sed -i '/Include\ conf\/extra\/httpd-ssl.conf/s/^#//g' conf/httpd.conf
+COPY certs/server.crt /usr/local/apache2/conf/server.crt
+COPY certs/server.key /usr/local/apache2/conf/server.key
+COPY html/index.html /usr/local/apache2/htdocs/
+
+
+
+
+FROM httpd:2.4.43
+RUN sed -i 's/Listen 80/Listen 8080/g' /usr/local/apache2/conf/httpd.conf \
+&& sed -i '/LoadModule\ ssl_module modules\/mod_ssl.so/s/^#//g' conf/httpd.conf \
+&& sed -i '/LoadModule\ socache_shmcb_module modules\/mod_socache_shmcb.so/s/^#//g' conf/httpd.conf \
+&& sed -i '/Include\ conf\/extra\/httpd-ssl.conf/s/^#//g' conf/httpd.conf
+COPY certs/server.crt /usr/local/apache2/conf/server.crt
+COPY certs/server.key /usr/local/apache2/conf/server.key
+COPY html/index.html /usr/local/apache2/htdocs/
+
+[root@stapp01 docker]# docker build . -t mycustomimage
+Sending build context to Docker daemon  9.216kB
+Step 1/5 : FROM httpd:2.4.43
+2.4.43: Pulling from library/httpd
+bf5952930446: Pull complete 
+3d3fecf6569b: Pull complete 
+b5fc3125d912: Pull complete 
+3c61041685c0: Pull complete 
+34b7e9053f76: Pull complete 
+Digest: sha256:cd88fee4eab37f0d8cd04b06ef97285ca981c27b4d685f0321e65c5d4fd49357
+Status: Downloaded newer image for httpd:2.4.43
+ ---> f1455599cc2e
+Step 2/5 : RUN sed -i 's/Listen 80/Listen 8080/g' /usr/local/apache2/conf/httpd.conf && sed -i '/LoadModule\ ssl_module modules\/mod_ssl.so/s/^#//g' conf/httpd.conf && sed -i '/LoadModule\ socache_shmcb_module modules\/mod_socache_shmcb.so/s/^#//g' conf/httpd.conf && sed -i '/Include\ conf\/extra\/httpd-ssl.conf/s/^#//g' conf/httpd.conf
+ ---> Running in 594d648a2c4b
+Removing intermediate container 594d648a2c4b
+ ---> cdcbf44c9c8b
+Step 3/5 : COPY certs/server.crt /usr/local/apache2/conf/server.crt
+ ---> 0b87f5d4b6e4
+Step 4/5 : COPY certs/server.key /usr/local/apache2/conf/server.key
+ ---> dbcf61efcab0
+Step 5/5 : COPY html/index.html /usr/local/apache2/htdocs/
+ ---> 396e34753ba0
+Successfully built 396e34753ba0
+Successfully tagged mycustomimage:latest
+
+[root@stapp01 docker]# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED              SIZE
+mycustomimage       latest              396e34753ba0        About a minute ago   166MB
+httpd               2.4.43              f1455599cc2e        3 years ago          166MB
+
+[root@stapp01 docker]# docker run -d --name mytestcontainer mycustomimage:latest
+f2882992fdc13d5ad00ab885698680a792d3b600e1970c398ac6b394f5524608
+
+[root@stapp01 docker]# docker ps -a
+CONTAINER ID        IMAGE                  COMMAND              CREATED             STATUS              PORTS               NAMES
+f2882992fdc1        mycustomimage:latest   "httpd-foreground"   38 seconds ago      Up 33 seconds       80/tcp              mytestcontainer
+
+
+[root@stapp01 docker]# docker exec -it mytestcontainer /bin/bash
+
+root@f2882992fdc1:/usr/local/apache2# cat /usr/local/apache2/htdocs/index.html 
+This Dockerfile works!
+
+root@f2882992fdc1:/usr/local/apache2# curl http://localhost:8080
+This Dockerfile works!
+
