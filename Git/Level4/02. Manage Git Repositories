@@ -1,0 +1,138 @@
+A new developer just joined the Nautilus development team and has been assigned a new project for which he needs to create a new repository under his account on Gitea server. Additionally, there is some existing data that need to be added to the repo. Below you can find more details about the task:
+Click on the Gitea UI button on the top bar. You should be able to access the Gitea UI. Login to Gitea server using username max and password Max_pass123.
+a. Create a new git repository story_official under max user.
+b. SSH into storage server using user max and password Max_pass123 and clone this newly created repository under user max home directory i.e /home/max.
+c. Copy all files from location /usr/devops to the repository and commit/push your changes to the master branch. The commit message must be "add stories" (must be done in single commit).
+d. Create a new branch max_apps from master.
+e. Copy a file story-index-max.txt from location /tmp/stories/ to the repository. This file has a typo, which you can fix by changing the word Mooose to Mouse. Commit and push the changes to the newly created branch. Commit message must be "typo fixed for Mooose" (must be done in single commit).
+ 
+thor@jump_host ~$ ssh max@172.16.238.15
+max $ git clone http://git.stratos.xfusioncorp.com/max/story_official.git
+Cloning into 'story_official'...
+warning: You appear to have cloned an empty repository.
+max $ cd story_official/
+max $ cp /usr/devops/* .
+max $ ls
+frogs-and-ox.txt    lion-and-mouse.txt
+max $ git  add .
+max $ git commit -m "add stories"
+[master (root-commit) faf6964] add stories
+Committer: Linux User <max@ststor01.stratos.xfusioncorp.com>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+ 
+    git config --global --edit
+ 
+After doing this, you may fix the identity used for this commit with:
+ 
+    git commit --amend --reset-author
+ 
+2 files changed, 42 insertions(+)
+create mode 100644 frogs-and-ox.txt
+create mode 100644 lion-and-mouse.txt
+max (master)$ git log
+commit faf6964cb1a37daf5a60b8269df3fea69ad94d0a
+Author: Linux User <max@ststor01.stratos.xfusioncorp.com>
+Date:   Wed Apr 17 13:22:46 2024 +0000
+ 
+    add stories
+
+max (master)$ git  push origin master
+Username for 'http://git.stratos.xfusioncorp.com': max
+Password for 'http://max@git.stratos.xfusioncorp.com': 
+Counting objects: 4, done.
+Delta compression using up to 36 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 1.19 KiB | 0 bytes/s, done.
+Total 4 (delta 0), reused 0 (delta 0)
+remote: . Processing 1 references
+remote: Processed 1 references in total
+To http://git.stratos.xfusioncorp.com/max/story_official.git
+* [new branch]      master -> master
+max (master)$ git remote -v
+origin  http://git.stratos.xfusioncorp.com/max/story_official.git (fetch)
+origin  http://git.stratos.xfusioncorp.com/max/story_official.git (push)
+max (master)$ 
+max (master)$ git remote show origin
+* remote origin
+  Fetch URL: http://git.stratos.xfusioncorp.com/max/story_official.git
+  Push  URL: http://git.stratos.xfusioncorp.com/max/story_official.git
+  HEAD branch: master
+  Remote branch:
+    master tracked
+  Local branch configured for 'git pull':
+    master merges with remote master
+  Local ref configured for 'git push':
+    master pushes to master (up to date)
+max (master)$ 
+max (master)$ git checkout -b max_apps
+Switched to a new branch 'max_apps'
+
+max (max_apps)$ cp /tmp/stories/story-index-max.txt .
+max (max_apps)$ vim story-index-max.txt 
+max (max_apps)$ cat story-index-max.txt 
+1. The Lion and the Mouse
+2. The Frogs and the Ox
+3. The Fox and the Grapes
+4. The Donkey and the Dog
+max (max_apps)$ 
+max (max_apps)$ git add story-index-max.txt 
+max (max_apps)$ git commit -m "typo fixed for Mooose"
+[max_apps 8f8d610] typo fixed for Mooose
+Committer: Linux User <max@ststor01.stratos.xfusioncorp.com>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+ 
+    git config --global --edit
+ 
+After doing this, you may fix the identity used for this commit with:
+ 
+    git commit --amend --reset-author
+ 
+1 file changed, 4 insertions(+)
+create mode 100644 story-index-max.txt
+
+max (max_apps)$ git push origin max_apps
+Username for 'http://git.stratos.xfusioncorp.com': max
+Password for 'http://max@git.stratos.xfusioncorp.com': 
+Counting objects: 3, done.
+Delta compression using up to 36 threads.
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 415 bytes | 0 bytes/s, done.
+Total 3 (delta 0), reused 0 (delta 0)
+remote: 
+remote: Create a new pull request for 'max_apps':
+remote:   http://git.stratos.xfusioncorp.com/max/story_official/compare/master...max_apps
+remote: 
+remote: . Processing 1 references
+remote: Processed 1 references in total
+To http://git.stratos.xfusioncorp.com/max/story_official.git
+* [new branch]      max_apps -> max_apps
+max (max_apps)$ 
+max (max_apps)$ 
+max (max_apps)$ git remote -v
+origin  http://git.stratos.xfusioncorp.com/max/story_official.git (fetch)
+origin  http://git.stratos.xfusioncorp.com/max/story_official.git (push)
+max (max_apps)$ git remote show origin
+* remote origin
+  Fetch URL: http://git.stratos.xfusioncorp.com/max/story_official.git
+  Push  URL: http://git.stratos.xfusioncorp.com/max/story_official.git
+  HEAD branch: master
+  Remote branches:
+    master   tracked
+    max_apps tracked
+  Local branch configured for 'git pull':
+    master merges with remote master
+  Local refs configured for 'git push':
+    master   pushes to master   (up to date)
+    max_apps pushes to max_apps (up to date)
+max (max_apps)$ git log --oneline
+8f8d610 typo fixed for Mooose
+faf6964 add stories
+max (max_apps)$
