@@ -1,0 +1,145 @@
+We are working on an application that will be deployed on multiple containers within a pod on Kubernetes cluster. There is a requirement to share a volume among the containers to save some temporary data. The Nautilus DevOps team is developing a similar template to replicate the scenario. Below you can find more details about it.
+Create a pod named volume-share-datacenter.
+For the first container, use image debian with latest tag only and remember to mention the tag i.e debian:latest, container should be named as volume-container-datacenter-1, and run a sleep command for it so that it remains in running state. Volume volume-share should be mounted at path /tmp/ecommerce.
+For the second container, use image debian with the latest tag only and remember to mention the tag i.e debian:latest, container should be named as volume-container-datacenter-2, and again run a sleep command for it so that it remains in running state. Volume volume-share should be mounted at path /tmp/games.
+Volume name should be volume-share of type emptyDir.
+After creating the pod, exec into the first container i.e volume-container-datacenter-1, and just for testing create a file ecommerce.txt with any content under the mounted path of first container i.e /tmp/ecommerce.
+The file ecommerce.txt should be present under the mounted path /tmp/games on the second container volume-container-datacenter-2 as well, since they are using a shared volume.
+
+ 
+thor@jump_host ~$ cat ex4.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: volume-share-datacenter
+spec:
+  volumes:
+  - name: volume-share
+    emptyDir: {}
+  containers:
+  - name: volume-container-datacenter-1
+    image: debian:latest
+    command:
+    - "sh"
+    - "-c"
+    - "sleep 1000"
+    volumeMounts:
+    - name: volume-share
+      mountPath: /tmp/ecommerce
+  - name: volume-container-datacenter-2
+    image: debian:latest
+    volumeMounts:
+    - name: volume-share
+      mountPath: /tmp/games
+    command:
+    - "sh"
+    - "-c"
+    - "sleep 1000"
+ 
+
+thor@jump_host ~$ kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+volume-share-datacenter   2/2     Running   0          58s
+
+thor@jump_host ~ kubectl exec -it volume-share-datacenter -c volume-container-datacenter-1 -- /bin/bash
+sh-5.2# cd /tmp/eccomerce
+# echo "asdasdasdsd" > ecommerce.txt
+# ls
+ecommerce.txt
+# cat ecommerce.txt
+asdasdasdsd
+exit
+
+thor@jump_host ~$ kubectl exec -it volume-share-datacenter -c volume-container-datacenter-2 -- /bin/bash
+# cd /tmp/games
+# ls
+ecommerce.txt
+# cat ecommerce.txt
+asdasdasdsd
+
+
+thor@jump_host ~$ kubectl describe pod volume-share-datacenter 
+Name:             volume-share-datacenter
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             kodekloud-control-plane/172.17.0.2
+Start Time:       Tue, 07 Nov 2023 09:27:49 +0000
+Labels:           <none>
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.5
+IPs:
+  IP:  10.244.0.5
+Containers:
+  volume-container-datacenter-1:
+    Container ID:  containerd://ec87063e056a79c2862f9d0759da2122d227ec94eed00578e88cf3d80891dbc5
+    Image:         debian:latest
+    Image ID:      docker.io/library/debian@sha256:fab22df37377621693c68650b06680c0d8f7c6bf816ec92637944778db3ca2c0
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      sh
+      -c
+      sleep 1000
+    State:          Running
+      Started:      Tue, 07 Nov 2023 09:27:57 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /tmp/ecommerce from volume-share (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-k9lb7 (ro)
+  volume-container-datacenter-2:
+    Container ID:  containerd://1f60702285d2db774dd10f442b2e12537f80fe51171be9143f69af235dc82eb5
+    Image:         debian:latest
+    Image ID:      docker.io/library/debian@sha256:fab22df37377621693c68650b06680c0d8f7c6bf816ec92637944778db3ca2c0
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      sh
+      -c
+      sleep 1000
+    State:          Running
+      Started:      Tue, 07 Nov 2023 09:27:58 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /tmp/games from volume-share (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-k9lb7 (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  volume-share:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-k9lb7:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  2m39s  default-scheduler  Successfully assigned default/volume-share-datacenter to kodekloud-control-plane
+  Normal  Pulling    2m38s  kubelet            Pulling image "debian:latest"
+  Normal  Pulled     2m31s  kubelet            Successfully pulled image "debian:latest" in 6.633833293s (6.633864007s including waiting)
+  Normal  Created    2m31s  kubelet            Created container volume-container-datacenter-1
+  Normal  Started    2m31s  kubelet            Started container volume-container-datacenter-1
+  Normal  Pulling    2m31s  kubelet            Pulling image "debian:latest"
+  Normal  Pulled     2m30s  kubelet            Successfully pulled image "debian:latest" in 323.403312ms (323.428111ms including waiting)
+  Normal  Created    2m30s  kubelet            Created container volume-container-datacenter-2
+  Normal  Started    2m30s  kubelet            Started container volume-container-datacenter-2
+
+
