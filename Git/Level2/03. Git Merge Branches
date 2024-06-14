@@ -1,0 +1,39 @@
+The Nautilus application development team has been working on a project repository /opt/media.git. This repo is cloned at /usr/src/kodekloudrepos on storage server in Stratos DC.  They recently shared the following requirements with DevOps team:
+Create a new branch xfusion in /usr/src/kodekloudrepos/media repo from master and copy the /tmp/index.html file (present on storage server itself) into the repo. Further, add/commit this file in the new branch and merge back that branch into master branch. Finally, push the changes to the origin for both of the branches
+
+
+[root@ststor01 natasha]# cd /opt/media.git
+[root@ststor01 media.git]# ls
+HEAD  branches  config  description  hooks  info  objects  refs
+[root@ststor01 kodekloudrepos]# cd media/
+[root@ststor01 media]# ls
+info.txt  welcome.txt
+[root@ststor01 media]# git branch -a
+* master
+  remotes/origin/master
+ 
+[root@ststor01 media]# git checkout -b xfusion 
+Switched to a new branch 'xfusion'
+[root@ststor01 media]# 
+[root@ststor01 media]# git branch -a
+  master
+* xfusion
+  remotes/origin/master
+ 
+[root@ststor01 media]# cp /tmp/index.html .
+[root@ststor01 media]# ls
+index.html  info.txt  welcome.txt
+ 
+[root@ststor01 media]# git checkout master
+[root@ststor01 media]# git merge xfusion
+Updating 509f62a..5919c6e
+Fast-forward
+index.html | 1 +
+1 file changed, 1 insertion(+)
+create mode 100644 index.html
+[root@ststor01 media]# 
+[root@ststor01 media]# 
+[root@ststor01 media]# ls
+index.html  info.txt  welcome.txt
+[root@ststor01 media]# git push origin master
+
