@@ -1,0 +1,115 @@
+Create a namespace devops. Create a deployment called httpd-deploy under this new namespace, It should have one container called httpd, use httpd:2.4.25 image and 3 replicas. 
+The deployment should use RollingUpdate strategy with maxSurge=1, and maxUnavailable=2. 
+Also create a NodePort type service named httpd-service and expose the deployment on nodePort: 30008.
+Now  the deployment to version httpd:2.4.43 using a rolling update.
+Finally, once all pods are updated undo the recent update and roll back to the previous/original version.
+
+Note:
+a. The kubectl utility on jump_host has been configured to work with the kubernetes cluster.
+b. Please make sure you only use the specified image(s) for this deployment and as per the sequence mentioned in the task description. If you mistakenly use a wrong image and fix it later, that will also distort the revision history which can eventually fail this task.
+
+
+
+kubectl create ns devops
+
+deployment.yaml:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: httpd-deploy
+ namespace: devops
+ labels:
+   app: httpd
+spec:
+ replicas: 3
+ selector:
+   matchLabels:
+     app: httpd
+ template:
+   metadata:
+     labels:
+       app: httpd
+   spec:
+     containers:
+     - name: httpd
+       image: httpd:2.4.25
+       ports:
+       - containerPort: 80
+ strategy:
+   type: RollingUpdate
+   rollingUpdate:
+     maxSurge: 1
+     maxUnavailable: 2
+
+
+
+kubectl expose deployment xx --name=<ime-servisa> --type="NodePort" --port XXXX
+
+then kubectl edit svc edit those ports:
+kubectl expose deployment httpd-deploy httpd-service --port=80 --target-port=80 --type="NodePort"
+
+
+kubectl expose deployment httpd-deploy --name="httpd-service" --port=80 --target-port=80 --type="NodePort" -n devops
+then
+thor@jump_host ~$ kubectl edit svc httpd-service -n devops
+
+#
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-11-09T08:19:47Z"
+  labels:
+    app: httpd
+  name: httpd-service
+  namespace: devops
+  resourceVersion: "3612"
+  uid: ae52aa62-cb13-44ed-aa06-9556e707b584
+spec:
+  clusterIP: 10.96.252.120
+  clusterIPs:
+  - 10.96.252.120
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - nodePort: 30008
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: httpd
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+
+thor@jump_host ~$ kubectl get svc -n devops 
+NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+httpd-service   NodePort   10.96.252.120   <none>        80:30008/TCP   2m25s
+
+
+hor@jump_host ~$ kubectl get deployments.apps -n devops -o wide
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES         SELECTOR
+httpd-deploy   3/3     3            3           10m   httpd        httpd:2.4.25   app=httpd
+
+kubectl set image deployment/httpd-deploy httpd=httpd:2.4.43  -n devops 
+
+thor@jump_host ~$ kubectl get deployments.apps -n devops -o wide
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES         SELECTOR
+httpd-deploy   3/3     3            3           14m   httpd        httpd:2.4.43   app=httpd
+
+thor@jump_host ~$ kubectl rollout status deployment/httpd-deploy -n devops
+deployment "httpd-deploy" successfully rolled out
+
+thor@jump_host ~$ kubectl rollout undo deployment/httpd-deploy -n devops
+deployment.apps/httpd-deploy rolled back
+
+thor@jump_host ~$ kubectl rollout status deployment/httpd-deploy -n devops
+deployment "httpd-deploy" successfully rolled out
+
+thor@jump_host ~$ kubectl get deployments.apps -n devops -o wide
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES         SELECTOR
+httpd-deploy   3/3     3            3                              17m          httpd        httpd:2.4.25   app=httpd
+
