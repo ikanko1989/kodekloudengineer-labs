@@ -1,0 +1,152 @@
+There is a requirement to Dockerize a Node app and to deploy the same on App Server 2. Under /node_app directory on App Server 2, we have already placed a package.json file that describes the app dependencies and server.js file that defines a web app framework.
+1.Create a Dockerfile (name is case sensitive) under /node_app directory:
+	Use any node image as the base image.
+	Install the dependencies using package.json file.
+	Use server.js in the CMD.
+	Expose port 3004.
+The build image should be named as nautilus/node-web-app.
+Now run a container named nodeapp_nautilus using this image.
+	Map the container port 3004 with the host port 8095.
+
+Once deployed, you can test the app using a curl command on App Server 2:
+curl http://localhost:8095
+
+
+
+
+
+
+[root@stapp03 banner]# cd /node_app/
+[root@stapp03 node_app]# ls
+package.json  server.js
+[root@stapp03 node_app]# cat package.json 
+{
+  "name": "docker_web_app",
+  "version": "1.0.0",
+  "description": "Node.js on Docker",
+  "author": "Sample Test <sample.test@example.com>",
+  "main": "server.js",
+  "keywords": [
+    "nodejs",
+    "bootstrap",
+    "express"
+  ],
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.1"
+  }
+}
+
+
+[root@stapp03 node_app]# cat server.js 
+'use strict';
+
+const express = require('express');
+
+// Constants
+const PORT = 3004;
+const HOST = '0.0.0.0';
+
+// App
+const app = express();
+app.get('/', (req, res) => {
+  res.send('Welcome to xFusionCorp Industries!');
+});
+
+app.listen(PORT, HOST);
+console.log(`Running on http://${HOST}:${PORT}`);
+
+
+
+[root@stapp02 node_app]# cat Dockerfile 
+
+# Use a Node.js base image
+FROM node:latest
+
+# Set the working directory inside the container
+WORKDIR /usr/src/app
+
+# Copy package.json to the working directory
+COPY package.json .
+
+# Install app dependencies
+RUN npm install
+
+# Copy server.js to the working directory
+COPY server.js .
+
+# Expose port 3004
+EXPOSE 3004
+
+# Define the command to run the application
+CMD ["node", "server.js"]
+
+
+root@stapp02 node_app]# docker build -t nautilus/node-web-app .
+Sending build context to Docker daemon  4.096kB
+Step 1/7 : FROM node:latest
+latest: Pulling from library/node
+90e5e7d8b87a: Pull complete 
+27e1a8ca91d3: Pull complete 
+d3a767d1d12e: Pull complete 
+711be5dc5044: Pull complete 
+22956530cc64: Pull complete 
+f72e9eb5a1b3: Pull complete 
+96d22460c6db: Pull complete 
+4e772c30a8d4: Pull complete 
+Digest: sha256:84bb4077fd52933a935e7057ba9991e7cb18487b0ba444835dd44975aa94b7b2
+Status: Downloaded newer image for node:latest
+ ---> 07308918cc5b
+Step 2/7 : WORKDIR /usr/src/app
+ ---> Running in 7d780465c91c
+Removing intermediate container 7d780465c91c
+ ---> e7be73c74915
+Step 3/7 : COPY package.json .
+ ---> 656d83998199
+Step 4/7 : RUN npm install
+ ---> Running in a1f006d2d2fd
+
+added 62 packages, and audited 63 packages in 3s
+
+11 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm notice 
+npm notice New patch version of npm available! 10.2.3 -> 10.2.4
+npm notice Changelog: <https://github.com/npm/cli/releases/tag/v10.2.4>
+npm notice Run `npm install -g npm@10.2.4` to update!
+npm notice 
+Removing intermediate container a1f006d2d2fd
+ ---> 400204bceb84
+Step 5/7 : COPY server.js .
+ ---> 848fc0a0f286
+Step 6/7 : EXPOSE 3004
+ ---> Running in 113b6d0fbe5c
+Removing intermediate container 113b6d0fbe5c
+ ---> 7cdf49df363d
+Step 7/7 : CMD ["node", "server.js"]
+ ---> Running in fcf0a3f3b01e
+Removing intermediate container fcf0a3f3b01e
+ ---> 0f6fee554f71
+Successfully built 0f6fee554f71
+Successfully tagged nautilus/node-web-app:latest
+
+
+[root@stapp02 node_app]# docker image list
+REPOSITORY                            TAG                 IMAGE ID                    CREATED              SIZE
+nautilus/node-web-app       latest              0f6fee554f71        About a minute ago   1.11GB
+node                                        latest              07308918cc5b        8 hours ago          1.1GB
+
+[root@stapp02 node_app]# docker run -d -p 8095:3004 --name nodeapp_nautilus nautilus/node-web-app
+
+
+[root@stapp02 node_app]# docker ps -a
+CONTAINER ID        IMAGE                   COMMAND                  CREATED              STATUS              PORTS                    NAMES
+31ce8f303262        nautilus/node-web-app   "docker-entrypoint.s…"   About a minute ago   Up 54 seconds       0.0.0.0:8095->3004/tcp   nodeapp_nautilus
+
+[root@stapp02 node_app]# curl http://localhost:8095
+Welcome to xFusionCorp Industries!
+
