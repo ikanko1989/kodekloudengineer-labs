@@ -1,0 +1,50 @@
+On App Server 3 in Stratos DC pull nginx image (preferably latest tag but others should work too).
+b. Create a new container with name beta from the image you just pulled.
+c. Map the host volume /opt/devops with container volume /tmp. There is an sample.txt file present on same server under /tmp; copy that file to /opt/devops. 
+Also please keep the container in running state.
+
+
+[root@stapp03 tmp]# docker pull nginx:latest
+latest: Pulling from library/nginx
+578acb154839: Pull complete 
+e398db710407: Pull complete 
+85c41ebe6d66: Pull complete 
+7170a263b582: Pull complete 
+8f28d06e2e2e: Pull complete 
+6f837de2f887: Pull complete 
+c1dfc7e1671e: Pull complete 
+Digest: sha256:86e53c4c16a6a276b204b0fd3a8143d86547c967dc8258b3d47c3a21bb68d3c6
+Status: Downloaded newer image for nginx:latest
+docker.io/library/nginx:latest
+
+[root@stapp03 tmp]# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+nginx               latest              c20060033e06        2 weeks ago         187MB
+
+[root@stapp03 tmp]# docker run -d --name beta -v /opt/devops:/tmp nginx:latest
+c66bda7c1d80b7b74d12a0de213efaeb608f5eb66d6f1f0c484416d5811c70f7
+
+[root@stapp03 tmp]# docker ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+c66bda7c1d80        nginx:latest        "/docker-entrypoint.…"   24 seconds ago      Up 7 seconds        80/tcp              beta
+
+
+[banner@stapp03 docker]$ docker exec -it c66bda7c1d80  /bin/bash
+root@5904cc97bc38:/# cd /tmp/      
+root@5904cc97bc38:/tmp# ls
+
+
+[banner@stapp03 tmp]$ ls /tmp/
+ks-script-kzk1nzfd  ks-script-l36mq90h  sample.txt
+
+
+[root@stapp03 tmp]# cp sample.txt /opt/devops/
+[root@stapp03 tmp]# cd /opt/devops/
+[root@stapp03 devops]# ls
+sample.txt
+
+[root@stapp03 devops]# docker exec -it c66bda7c1d80 /bin/bash
+root@c66bda7c1d80:/# cd /tmp/
+root@c66bda7c1d80:/tmp# ls
+sample.txt
+
