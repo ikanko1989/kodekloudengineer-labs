@@ -1,0 +1,42 @@
+5. Nautilus developers are actively working on one of the project repositories, /usr/src/kodekloudrepos/games. They were doing some testing and created few test branches, now they want to clean those test branches. Below are the requirements that have been shared with the DevOps team:
+On Storage server in Stratos DC delete a branch named xfusioncorp_games from /usr/src/kodekloudrepos/games git repo.
+ 
+ 
+thor@jump_host ~$ ssh natasha@172.16.238.15
+natasha@172.16.238.15's password: 
+Last login: Fri Apr  5 10:29:50 2024 from 172.16.238.3
+
+[natasha@ststor01 ~]$ cd /usr/src/kodekloudrepos/games
+[natasha@ststor01 games]$ sudo su
+ 
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+ 
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+ 
+[sudo] password for natasha: 
+
+[root@ststor01 games]# git branch -a
+  master
+* xfusioncorp_games
+  remotes/origin/master
+
+[root@ststor01 games]# git checkout master
+Switched to branch 'master'
+Your branch is up to date with 'origin/master'.
+[root@ststor01 games]# 
+[root@ststor01 games]# git branch -a
+* master
+  xfusioncorp_games
+  remotes/origin/master
+
+[root@ststor01 games]# git branch -d xfusioncorp_games
+Deleted branch xfusioncorp_games (was ca90ce9).
+
+[root@ststor01 games]# git branch -a
+* master
+  remotes/origin/master
+
+
