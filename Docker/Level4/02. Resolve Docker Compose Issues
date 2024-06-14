@@ -1,0 +1,174 @@
+The Nautilus DevOps team is working to deploy one of the applications on App Server 2 in Stratos DC. Due to a misconfiguration in the docker compose file, the deployment is failing. We would like you to take a look into it to identify and fix the issues. More details can be found below:
+a. docker-compose.yml file is present on App Server 2 under /opt/docker directory.
+b. Try to run the same and make sure it works fine.
+c. Please do not change the container names being used. Also, do not update or alter any other valid config settings in the compose file or any other relevant data that can cause app failure.
+Note: Please note that once you click on FINISH button all existing running/stopped containers will be destroyed, and your compose will be run.
+
+FYI
+The image field should reference an image from a registry (e.g., Docker Hub), not a local path. 
+The build field should be used to specify a local directory with a Dockerfile to build the image.
+
+[root@stapp02 steve]# cd /opt/docker/
+[root@stapp02 docker]# ls
+app  docker-compose.yml
+[root@stapp02 docker]# cat docker-compose.yml 
+version: '2'
+services:
+    web:
+        image: ./app
+        container_name: python
+        port:
+            - "5000:5000"
+        volumes:
+            - ./app:/code
+        depends_on:
+            - redis
+    redis_app:
+        image: redis
+        container_name: redis
+[root@stapp02 docker]# 
+
+
+
+[root@stapp02 docker]# cd app
+[root@stapp02 app]# pwd
+/opt/docker/app
+[root@stapp02 app]# ls
+Dockerfile  app.py  requirements.txt
+
+[root@stapp02 app]# cat Dockerfile 
+FROM python:2.7
+ADD . /code
+WORKDIR /code
+RUN pip install -r requirements.txt
+CMD python app.py
+
+
+[root@stapp02 app]# cat app.py 
+# compose_flask/app.py
+from flask import Flask
+from redis import Redis
+
+app = Flask(__name__)
+redis = Redis(host='redis', port=6379)
+
+@app.route('/')
+def hello():
+    redis.incr('hits')
+    return 'This Compose/Flask demo has been viewed %s time(s).' % redis.get('hits')
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=True)
+
+[root@stapp02 app]# cat requirements.txt 
+flask
+redis
+
+[root@stapp02 docker]# vi docker-compose.yml 
+[root@stapp02 docker]# cat docker-compose.yml 
+version: '2'
+services:
+    web:
+        build: ./app
+        container_name: python
+        ports:
+            - "5000:5000"
+        volumes:
+            - ./app:/code
+        depends_on:
+            - redis_app
+    redis_app:
+        image: redis
+        container_name: redis
+
+[root@stapp02 docker]# docker-compose -f  /opt/docker/docker-compose.yml up -d
+Creating network "docker_default" with the default driver
+Pulling redis_app (redis:)...
+latest: Pulling from library/redis
+578acb154839: Pull complete
+9a217a51793f: Pull complete
+07058ed9ec8f: Pull complete
+d3ba9a132495: Pull complete
+adeece162a71: Pull complete
+4f4fb700ef54: Pull complete
+7018b7448b70: Pull complete
+Building web
+Step 1/5 : FROM python:2.7
+2.7: Pulling from library/python
+7e2b2a5af8f6: Pull complete
+09b6f03ffac4: Pull complete
+dc3f0c679f0f: Pull complete
+fd4b47407fc3: Pull complete
+b32f6bf7d96d: Pull complete
+6f4489a7e4cf: Pull complete
+af4b99ad9ef0: Pull complete
+39db0bc48c26: Pull complete
+acb4a89489fc: Pull complete
+Digest: sha256:cfa62318c459b1fde9e0841c619906d15ada5910d625176e24bf692cf8a2601d
+Status: Downloaded newer image for python:2.7
+ ---> 68e7be49c28c
+Step 2/5 : ADD . /code
+ ---> edf378901149
+Step 3/5 : WORKDIR /code
+ ---> Running in 96ecdfb212be
+Removing intermediate container 96ecdfb212be
+ ---> 8da1ea75fc44
+Step 4/5 : RUN pip install -r requirements.txt
+ ---> Running in dec00d561d42
+DEPRECATION: Python 2.7 reached the end of its life on January 1st, 2020. Please upgrade your Python as Python 2.7 is no longer maintained. A future version of pip will drop support for Python 2.7. More details about Python 2 support in pip, can be found at https://pip.pypa.io/en/latest/development/release-process/#python-2-support
+Collecting flask
+  Downloading Flask-1.1.4-py2.py3-none-any.whl (94 kB)
+Collecting redis
+  Downloading redis-3.5.3-py2.py3-none-any.whl (72 kB)
+Collecting click<8.0,>=5.1
+  Downloading click-7.1.2-py2.py3-none-any.whl (82 kB)
+Collecting Werkzeug<2.0,>=0.15
+  Downloading Werkzeug-1.0.1-py2.py3-none-any.whl (298 kB)
+Collecting Jinja2<3.0,>=2.10.1
+  Downloading Jinja2-2.11.3-py2.py3-none-any.whl (125 kB)
+Collecting itsdangerous<2.0,>=0.24
+  Downloading itsdangerous-1.1.0-py2.py3-none-any.whl (16 kB)
+Collecting MarkupSafe>=0.23
+  Downloading MarkupSafe-1.1.1-cp27-cp27mu-manylinux1_x86_64.whl (24 kB)
+Installing collected packages: click, Werkzeug, MarkupSafe, Jinja2, itsdangerous, flask, redis
+Successfully installed Jinja2-2.11.3 MarkupSafe-1.1.1 Werkzeug-1.0.1 click-7.1.2 flask-1.1.4 itsdangerous-1.1.0 redis-3.5.3
+WARNING: You are using pip version 20.0.2; however, version 20.3.4 is available.
+You should consider upgrading via the '/usr/local/bin/python -m pip install --upgrade pip' command.
+Removing intermediate container dec00d561d42
+ ---> 624485621036
+Step 5/5 : CMD python app.py
+ ---> Running in f639597a71a3
+Removing intermediate container f639597a71a3
+ ---> 015fc28ba6b7
+Successfully built 015fc28ba6b7
+Successfully tagged docker_web:latest
+WARNING: Image for service web was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.
+Creating redis ... done
+Creating python ... done
+
+
+[root@stapp02 docker]# docker images
+REPOSITORY   TAG       IMAGE ID       CREATED              SIZE
+docker_web   latest    015fc28ba6b7   About a minute ago   907MB
+redis        latest    e10bd12f0b2d   10 days ago          138MB
+python       2.7       68e7be49c28c   3 years ago          902MB
+
+[root@stapp02 docker]# docker ps -a
+CONTAINER ID   IMAGE                 COMMAND                         CREATED                        STATUS                   PORTS                               NAMES
+f5a4886e7b86   docker_web   "/bin/sh -c 'python …"      About a minute ago   Up 27 seconds           0.0.0.0:5000->5000/tcp   python
+0fc4e7467aa3   redis                 "docker-entrypoint.s…"   About a minute ago    Up About a minute   6379/tcp                              redis
+
+
+[root@stapp02 docker]# curl http://localhost:5000
+This Compose/Flask demo has been viewed 1 time(s).
+
+
+In your specific example, the sequence would be:
+• Docker Compose reads the docker-compose.yml file.
+• It creates the redis_app container using the Redis image from the Docker Hub.
+• When building the web service:
+	• It attempts to build an image using the ./app path as the build context (assuming a Dockerfile is present there).
+	• Once the image is built (if successful), it creates a container named python based on that image.
+	• It then configures the ports and volumes as specified in the docker-compose.yml file for the web service.
+
+
