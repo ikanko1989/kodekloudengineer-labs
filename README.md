@@ -29,5 +29,32 @@ __Level 4__
 * Lab02 - Resolve Docker Compose Issues  
 * Lab03 - Deploy an App on Docker Containers  
 * Lab04 - Docker Node App  
-* Lab05 - Docker Python App  
+* Lab05 - Docker Python App
 
+## Git
+__Level 1__ 
+* Lab01 - Git Install and Create Bare Repository  
+* Lab02 - Git Clone Repositories  
+* Lab04 - Git Repository Update  
+* Lab05 - Git Delete Branches
+  
+__Level 2__  
+* Lab01 - Git Install and Create Repository  
+* Lab02 - Git Create Branches  
+* Lab03 - Git Merge Branches  
+* Lab04 - Git Manage Remotes  
+* Lab05 - Git Revert Some Changes    
+
+__Level 3__  
+* Lab01 - Git Cherry Pick
+* Lab02 - Manage Git Pull Requests
+* Lab03 - Git hard reset
+* Lab04 - Git Clean
+* Lab05 - Git Stash
+  
+__Level 4__    
+* Lab01 - Git Rebase  
+* Lab02 - Manage Git Repositories  
+* Lab03 - Resolve Git Merge Conflicts  
+* Lab04 - Git Hook  
+* Lab05 - Git Setup from Scratch  
