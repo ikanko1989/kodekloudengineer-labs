@@ -1,0 +1,43 @@
+a. Create a docker network named as beta on App Server 2 in Stratos DC.
+b. Configure it to use bridge drivers.
+c. Set it to use subnet 172.168.0.0/24 and iprange 172.168.0.2/24.
+
+[steve@stapp02 ~]$ docker network create --driver bridge   --ip-range 172.168.0.2/24   --subnet 172.168.0.0/24  beta
+1551dda23e98591397fd6a894320f104bb7a9df2753f6d5a743c0634a53c3f80
+[steve@stapp02 ~]$ 
+[steve@stapp02 ~]$ docker network list
+NETWORK ID          NAME                DRIVER              SCOPE
+1551dda23e98        beta                bridge              local
+
+[steve@stapp02 ~]$ docker inspect beta
+[
+    {
+        "Name": "beta",
+        "Id": "1551dda23e98591397fd6a894320f104bb7a9df2753f6d5a743c0634a53c3f80",
+        "Created": "2023-11-15T11:34:26.073854323Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.168.0.0/24",
+                    "IPRange": "172.168.0.2/24"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Options": {},
+        "Labels": {}
+    }
+]
+
