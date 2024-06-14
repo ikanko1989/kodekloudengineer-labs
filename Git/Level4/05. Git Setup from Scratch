@@ -1,0 +1,157 @@
+Some new developers have joined xFusionCorp Industries and have been assigned Nautilus project. They are going to start development on a new application, and some pre-requisites have been shared with the DevOps team to proceed with. Please note that all tasks need to be performed on storage server in Stratos DC.
+
+a. Install git, set up any values for user.email and user.name globally and create a bare repository  /opt/blog.git.
+b. There is  an update hook (to block direct pushes to the master branch) under /tmp on storage server itself; use the same to block direct pushes to the master branch in /opt/blog.git repo.
+c. Clone /opt/blog.git repo in /usr/src/kodekloudrepos/blog directory.
+d. Create a new branch named xfusioncorp_blog in repo that you cloned under /usr/src/kodekloudrepos directory
+e. There is a readme.md file in /tmp directory on storage server itself; copy that to the repo, add/commit in the new branch you just created, and finally push your branch to the origin.
+f. Also create master branch from your branch and remember you should not be able to push to the master directly as per the hook you have set up.
+
+
+ 
+[natasha@ststor01 ~]$ sudo su
+[root@ststor01 natasha]# mkdir /opt/blog.git
+[root@ststor01 natasha]# cd /opt/blog.git/
+[root@ststor01 blog.git]# yum install  git
+...                                    
+Complete!
+
+
+[root@ststor01 blog.git]# git --version
+git version 2.43.0
+
+
+[root@ststor01 blog.git]# git init --bare
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint:   git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint:   git branch -m <name>
+Initialized empty Git repository in /opt/blog.git/
+
+[root@ststor01 blog.git]# git config user.name "ivan"
+
+[root@ststor01 blog.git]# git config user.email "ivan@gmail.com"
+
+[root@ststor01 blog.git]# cd /tmp/
+
+[root@ststor01 tmp]# ls
+ks-script-kzk1nzfd ks-script-l36mq90h  readme.md  update
+
+[root@ststor01 tmp]# cat update
+#!/bin/sh
+if [ "$1" == refs/heads/master ];
+then
+ echo "Manual pushes to the master branch is restricted!!"
+ exit 1
+fi
+
+[root@ststor01 tmp]# cp update /opt/blog.git/hooks/
+
+[root@ststor01 tmp]# cd /opt/blog.git/hooks/
+
+[root@ststor01 hooks]# ls
+applypatch-msg.sample     pre-applypatch.sample   pre-rebase.sample         sendemail-validate.sample
+commit-msg.sample         pre-commit.sample       pre-receive.sample         update
+fsmonitor-watchman.sample pre-merge-commit.sample prepare-commit-msg.sample update.sample
+post-update.sample        pre-push.sample         push-to-checkout.sample
+
+[root@ststor01 hooks]# cd /usr/src/kodekloudrepos/
+
+[root@ststor01 kodekloudrepos]# git clone /opt/blog.git
+Cloning into 'blog'...
+warning: You appear to have cloned an empty repository.
+done.
+[root@ststor01 blog]# pwd
+/usr/src/kodekloudrepos/blog
+
+[root@ststor01 blog]# git status
+On branch master
+ 
+No commits yet
+ 
+nothing to commit (create/copy files and use "git add" to track)
+
+[root@ststor01 blog]# git checkout -b xfusioncorp_blog
+Switched to a new branch 'xfusioncorp_blog'
+
+[root@ststor01 blog]# cp /tmp/readme.md .
+
+[root@ststor01 blog]# ls
+readme.md
+
+
+[root@ststor01 blog]# git add readme.md
+
+[root@ststor01 blog]# git status
+On branch xfusioncorp_blog
+ 
+No commits yet
+ 
+Changes to be committed:
+ (use "git rm --cached <file>..." to unstage)
+       new file:   readme.md
+ 
+[root@ststor01 blog]# git commit -m "added readme.md"
+[xfusioncorp_blog (root-commit) dcc7a94] added readme.md
+Committer: root <root@ststor01.stratos.xfusioncorp.com>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+ 
+   git config --global --edit
+ 
+After doing this, you may fix the identity used for this commit with:
+ 
+   git commit --amend --reset-author
+ 
+1 file changed, 1 insertion(+)
+create mode 100644 readme.md
+
+[root@ststor01 blog]# git branch -a
+* xfusioncorp_blog
+
+
+
+[root@ststor01 blog]# git push origin xfusioncorp_blog
+Enumerating objects: 3, done.
+Counting objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 253 bytes | 253.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+To /opt/blog.git
+* [new branch]      xfusioncorp_blog -> xfusioncorp_blog
+
+[root@ststor01 blog]# git log --name-only
+commit dcc7a94996bfbc2be8f5b1c3f9f6ceaf881ffded (HEAD -> xfusioncorp_blog, origin/xfusioncorp_blog)
+Author: root <root@ststor01.stratos.xfusioncorp.com>
+Date:   Tue Apr 23 05:27:05 2024 +0000
+ 
+   added readme.md
+ 
+readme.md
+
+[root@ststor01 blog]# git checkout -b master
+Switched to a new branch 'master'
+Your branch is based on 'origin/master', but the upstream is gone.
+ (use "git branch --unset-upstream" to fixup)
+
+[root@ststor01 blog]# git branch -a
+* master
+ xfusioncorp_blog
+remotes/origin/xfusioncorp_blog
+
+[root@ststor01 blog]# git push origin master
+Total 0 (delta 0), reused 0 (delta 0), pack-reused 0
+remote: Manual pushes to the master branch is restricted!!
+remote: error: hook declined to update refs/heads/master
+To /opt/blog.git
+! [remote rejected] master -> master (hook declined)
+error: failed to push some refs to '/opt/blog.git'
+
