@@ -1,0 +1,34 @@
+Create a pod named print-envars-greeting.
+Configure spec as, the container name should be print-env-container and use bash image.
+Create three environment variables:
+a. GREETING and its value should be Welcome to
+b. COMPANY and its value should be xFusionCorp
+c. GROUP and its value should be Ltd
+Use command to echo ["$(GREETING) $(COMPANY) $(GROUP)"] message.
+You can check the output using kubectl logs -f print-envars-greeting command.
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: print-envars-greeting
+spec:
+  containers:
+  - name: print-env-container
+    image: bash
+    env:
+    - name: GREETING
+      value: "Welcome to"
+    - name: COMPANY
+      value: "xFusionCorp"
+    - name: GROUP
+      value: "Ltd"
+    command: 
+    - "sh"
+    - "-c"
+    - "echo $(GREETING) $(COMPANY) $(GROUP)"
+
+thor@jump_host ~$ kubectl logs -f print-envars-greeting 
+Welcome to xFusionCorp Ltd
+
+
