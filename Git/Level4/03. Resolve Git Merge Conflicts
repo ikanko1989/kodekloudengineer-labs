@@ -1,0 +1,108 @@
+Sarah and Max were working on writting some stories which they have pushed to the repository. Max has recently added some new changes and is trying to push them to the repository but he is facing some issues. Below you can find more details:
+SSH into storage server using user max and password Max_pass123. Under /home/max you will find the story-blog repository. Try to push the changes to the origin repo and fix the issues. The story-index.txt must have titles for all 4 stories. Additionally, there is a typo in The Lion and the Mooose line where Mooose should be Mouse.
+Click on the Gitea UI button on the top bar. You should be able to access the Gitea page. You can login to Gitea server from UI using username sarah and password Sarah_pass123 or username max and password Max_pass123.
+
+thor@jump_host ~$ ssh max@172.16.238.15
+The authenticity of host '172.16.238.15 (172.16.238.15)' can't be established.
+ECDSA key fingerprint is SHA256:0z85j/k+4Nf8WKbHJzxo1AOv4FeRA8LPET2N3BEkYyo.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '172.16.238.15' (ECDSA) to the list of known hosts.
+max@172.16.238.15's password: 
+Welcome to xFusionCorp Storage server.
+
+max $ cd story-blog/
+max (master)$ ls
+fox-and-grapes.txt  frogs-and-ox.txt    lion-and-mouse.txt  story-index.txt
+
+max (master)$ git log --oneline
+8f7c8aa Added the fox and grapes story
+673e49c Merge branch 'story/frogs-and-ox'
+af57f13 Fix typo in story title
+0fc30b2 Completed frogs-and-ox story
+0381ae1 Added the lion and mouse story
+7156511 Add incomplete frogs-and-ox story
+
+max (master)$ git status
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+ 
+        modified:   story-index.txt
+
+max (master)$ git pull
+remote: Enumerating objects: 4, done.
+remote: Counting objects: 100% (4/4), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (3/3), done.
+From http://git.stratos.xfusioncorp.com/sarah/story-blog
+   673e49c..329e9a5  master     -> origin/master
+Auto-merging story-index.txt
+CONFLICT (add/add): Merge conflict in story-index.txt
+Automatic merge failed; fix conflicts and then commit the result.
+
+max (master)$ cat story-index.txt 
+1. The Lion and the Mouse
+2. The Frogs and the Ox
+<<<<<<< HEAD
+3. The Fox and the Grapes
+4. The Donkey and the Dog
+=======
+3. The Fox and the Grapes
+>>>>>>> 329e9a5a65b6df2e98a60d041864ef0cb6bb55b6
+
+
+max (master)$ vim story-index.txt 
+max (master)$ git commit -m "fixed typo in story-index.txt1"
+[master 78816f5] fixed typo in story-index.txt1
+Committer: Linux User <max@ststor01.stratos.xfusioncorp.com>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+ 
+    git config --global --edit
+ 
+After doing this, you may fix the identity used for this commit with:
+ 
+    git commit --amend --reset-author
+ 
+max (master)$ git status
+On branch master
+Your branch is ahead of 'origin/master' by 3 commits.
+  (use "git push" to publish your local commits)
+nothing to commit, working directory clean
+
+max (master)$ git push origin master
+Username for 'http://git.stratos.xfusioncorp.com': max
+Password for 'http://max@git.stratos.xfusioncorp.com': 
+Counting objects: 8, done.
+Delta compression using up to 36 threads.
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (8/8), 1.25 KiB | 0 bytes/s, done.
+Total 8 (delta 2), reused 0 (delta 0)
+remote: . Processing 1 references
+remote: Processed 1 references in total
+To http://git.stratos.xfusioncorp.com/sarah/story-blog.git
+   329e9a5..78816f5  master -> master
+
+max (master)$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+nothing to commit, working directory clean
+
+max (master)$ git log --oneline
+78816f5 fixed typo in story-index.txt1
+2dc9f43 fixed typo in story-index.txt
+8f7c8aa Added the fox and grapes story
+329e9a5 Added Index
+673e49c Merge branch 'story/frogs-and-ox'
+af57f13 Fix typo in story title
+0fc30b2 Completed frogs-and-ox story
+0381ae1 Added the lion and mouse story
+7156511 Add incomplete frogs-and-ox story
+max (master)$
