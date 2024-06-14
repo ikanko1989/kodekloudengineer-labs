@@ -1,0 +1,74 @@
+4.The Nautilus development team started with new project development. They have created different Git repositories to manage respective project's source code. One of the repositories /opt/apps.git was created recently. 
+The team has given us a sample index.html file that is currently present on jump host under /tmp directory. 
+The repository has been cloned at /usr/src/kodekloudrepos on storage server in Stratos DC. 
+Copy sample index.html file from jump host to storage server under cloned repository at /usr/src/kodekloudrepos/apps, further add/commit the file and push to the master branch.
+
+
+thor@jump_host /tmp$ ls
+demofile2.json  index.html  ks-script-blvdp0_4  ks-script-ei2y7edh
+ 
+thor@jump_host /tmp$ ls
+demofile2.json  index.html  ks-script-blvdp0_4  ks-script-ei2y7edh
+ 
+root@ststor01 apps]# pwd
+/usr/src/kodekloudrepos/apps
+[root@ststor01 apps]# ls
+info.txt  welcome.txt
+ 
+root@jump_host /tmp#  scp index.html natasha@172.16.238.15:
+natasha@172.16.238.15's password: 
+index.html     
+ 
+[root@ststor01 apps]# cp /home/natasha/index.html .
+[root@ststor01 apps]# pwd
+/usr/src/kodekloudrepos/apps
+[root@ststor01 apps]# ls
+index.html  info.txt  welcome.txt
+ 
+[root@ststor01 apps]# git status
+On branch master
+Your branch is up to date with 'origin/master'.
+ 
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        index.html
+ 
+nothing added to commit but untracked files present (use "git add" to track)
+ 
+[root@ststor01 apps]# git add index.html 
+[root@ststor01 apps]# git status
+On branch master
+Your branch is up to date with 'origin/master'.
+ 
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   index.html
+ 
+[root@ststor01 apps]# git commit -m "added index.html file"
+[master dd7b8f8] added index.html file
+1 file changed, 1 insertion(+)
+create mode 100644 index.html
+[root@ststor01 apps]# git status
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+
+[root@ststor01 apps]# git log
+commit dd7b8f8757a8e35fbd1cbb2de63b1733092806e2 (HEAD -> master)
+Author: Admin <admin@kodekloud.com>
+Date:   Wed Apr 3 10:30:20 2024 +0000
+ 
+    added index.html file
+ 
+[root@ststor01 apps]# git push origin master
+Enumerating objects: 4, done.
+Counting objects: 100% (4/4), done.
+Delta compression using up to 36 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 336 bytes | 336.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+To /opt/apps.git
+   8b6398d..dd7b8f8  master -> master
+
