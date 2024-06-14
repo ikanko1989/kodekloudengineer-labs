@@ -1,0 +1,51 @@
+The Nautilus application development team shared static website content that needs to be hosted on the httpd web server using a containerised platform. The team has shared details with the DevOps team, and we need to set up an environment according to those guidelines. Below are the details:
+a. On App Server 1 in Stratos DC create a container named httpd using a docker compose file /opt/docker/docker-compose.yml (please use the exact name for file).
+b. Use httpd (preferably latest tag) image for container and make sure container is named as httpd; you can use any name for service.
+c. Map 80 number port of container with port 8087 of docker host.
+d. Map container's /usr/local/apache2/htdocs volume with /opt/security volume of docker host which is already there. (please do not modify any data within these locations).
+
+
+[root@stapp01 docker]# vi /opt/docker/docker-compose.yml
+[root@stapp01 docker]# cat /opt/docker/docker-compose.yml 
+version: '3'
+services:
+  httpd:
+    container_name: httpd
+    image: httpd:latest
+    ports:
+      - "8087:80"
+    volumes:
+      - /opt/security:/usr/local/apache2/htdocs
+[root@stapp01 docker]# 
+
+[root@stapp01 docker]# docker-compose -f /opt/docker/docker-compose.yml up -d
+[+] Running 6/6
+ ✔ httpd 5 layers [⣿⣿⣿⣿⣿]      0B/0B      Pulled                                                                                                30.2s 
+   ✔ 578acb154839 Pull complete                                                                                                                  8.9s 
+   ✔ c1a8c8567b78 Pull complete                                                                                                                 11.0s 
+   ✔ 10b9ab03bf45 Pull complete                                                                                                                 17.9s 
+   ✔ 74dbedf7ddc0 Pull complete                                                                                                                 26.4s 
+   ✔ 6a3b76b70f73 Pull complete                                                                                                                 29.5s 
+[+] Building 0.0s (0/0)                                                                                                                               
+[+] Running 2/2
+ ✔ Network docker_default  Created                                                                                                               0.2s 
+ ✔ Container httpd         Started                                                                                                               8.4s 
+[root@stapp01 docker]# 
+
+[root@stapp01 docker]# docker ps -a
+CONTAINER ID        IMAGE               COMMAND              CREATED             STATUS              PORTS                  NAMES
+be7d433909c7        httpd:latest        "httpd-foreground"   16 seconds ago      Up 8 seconds        0.0.0.0:8087->80/tcp   httpd
+
+[root@stapp01 docker]# docker image list
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+httpd               latest              7f6a969e81a5        2 weeks ago         168MB
+[root@stapp01 docker]# 
+
+[root@stapp01 docker]# cd /opt/security/
+[root@stapp01 security]# ls
+index1.html
+[root@stapp01 security]# 
+[root@stapp01 security]# docker exec -it be7d433909c7 /bin/bash
+root@be7d433909c7:/usr/local/apache2# cd htdocs/
+root@be7d433909c7:/usr/local/apache2/htdocs# ls
+index1.html
