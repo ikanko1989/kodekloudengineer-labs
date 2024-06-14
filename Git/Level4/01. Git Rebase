@@ -1,0 +1,69 @@
+The Nautilus application development team has been working on a project repository /opt/blog.git. This repo is cloned at /usr/src/kodekloudrepos on storage server in Stratos DC.  They recently shared the following requirements with DevOps team:
+One of the developers is working on feature branch and their work is still in progress, however there are some changes which have been pushed into the master branch, the developer now wants to rebase the feature branch with the master branch without loosing any data from the feature branch, also they don't want to add any merge commit by simply merging the master branch into the feature branch. Accomplish this task as per requirements mentioned.
+Also remember to push your changes once done.
+
+[root@ststor01 news]# pwd
+/usr/src/kodekloudrepos/news
+
+[root@ststor01 news]# cat feature.txt 
+This is a new feature
+[root@ststor01 news]# cat info.txt 
+Welcome to xFusionCorp Industries
+
+[root@ststor01 news]# git branch -a
+* feature
+  master
+  remotes/origin/feature
+  remotes/origin/master
+[root@ststor01 news]# 
+[root@ststor01 news]# git log --oneline
+1b884cd (HEAD -> feature, origin/feature) Add new feature
+6af82af initial commit
+
+[root@ststor01 news]# git fetch origin master
+From /opt/news
+* branch            master     -> FETCH_HEAD
+[root@ststor01 news]# 
+[root@ststor01 news]# 
+
+[root@ststor01 news]# git rebase origin/master
+Successfully rebased and updated refs/heads/feature.
+
+[root@ststor01 news]# git log --oneline
+235e8d0 (HEAD -> feature) Add new feature
+50416a8 (origin/master, master) Update info.txt
+6af82af initial commit
+
+
+[root@ststor01 news]# git push origin feature  --force-with-lease
+Enumerating objects: 4, done.
+Counting objects: 100% (4/4), done.
+Delta compression using up to 36 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 295 bytes | 295.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+To /opt/news.git
++ 1b884cd...235e8d0 feature -> feature (forced update)
+
+[root@ststor01 news]# git log
+commit 235e8d065ceb0dc9e85e2a12497fd1cdfc97fa76 (HEAD -> feature, origin/feature)
+Author: Admin <admin@kodekloud.com>
+Date:   Tue Apr 16 07:44:00 2024 +0000
+ 
+    Add new feature
+ 
+commit 50416a8cc08a71cae9a4cab503df55616d613e58 (origin/master, master)
+Author: Admin <admin@kodekloud.com>
+Date:   Tue Apr 16 07:44:00 2024 +0000
+ 
+    Update info.txt
+ 
+commit 6af82afd20524c54de320e6d1e247d44c33b7fc7
+Author: Admin <admin@kodekloud.com>
+Date:   Tue Apr 16 07:44:00 2024 +0000
+ 
+    initial commit
+[root@ststor01 news]#
+
+
+
