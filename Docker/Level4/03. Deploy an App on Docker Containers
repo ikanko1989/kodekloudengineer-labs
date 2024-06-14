@@ -1,0 +1,230 @@
+On App Server 2 in Stratos Datacenter create a docker compose file /opt/sysops/docker-compose.yml (should be named exactly).
+The compose should deploy two services (web and DB), and each service should deploy a container as per details below:
+
+For web service:
+a. Container name must be php_blog.
+b. Use image php with any apache tag. Check here for more details.
+c. Map php_blog container's port 80 with host port 3004
+d. Map php_blog container's /var/www/html volume with host volume /var/www/html.
+
+For DB service:
+a. Container name must be mysql_blog.
+b. Use image mariadb with any tag (preferably latest). Check here for more details.
+c. Map mysql_blog container's port 3306 with host port 3306
+d. Map mysql_blog container's /var/lib/mysql volume with host volume /var/lib/mysql.
+e. Set MYSQL_DATABASE=database_blog and use any custom user ( except root ) with some complex password for DB connections.
+After running docker-compose up you can access the app with curl command curl <server-ip or hostname>:3002/
+
+For more details check here.
+
+
+[root@stapp02 steve]# cd /opt/data/
+[root@stapp02 data]# cat docker-compose.yml 
+version: '3'
+services:
+    web:
+        image: php:apache
+        container_name: php_blog
+        ports:
+            - "3004:80"
+        volumes:
+            - /var/www/html:/var/www/html
+    DB:
+        image: mariadb:latest
+        container_name: mysql_blog
+        ports:
+            - "3306:3306"
+        volumes:
+            - /var/lib/mysql:/var/lib/mysql 
+        environment:
+             MYSQL_DATABASE: database_blog
+             MYSQL_USER: custom_user
+             MYSQL_PASSWORD: Complex_Password123
+             MYSQL_ROOT_PASSWORD: root_Complex_Password123
+
+
+
+[root@stapp02 data]# docker-compose -f docker-compose.yml up
+Pulling web (php:apache)...
+apache: Pulling from library/php
+578acb154839: Pull complete
+c053f6f43c12: Pull complete
+65cebbf4d847: Pull complete
+34045bc93960: Pull complete
+da31f94fbeef: Pull complete
+c755cb948935: Pull complete
+47863fce0cd3: Pull complete
+f2a5ef80cfbe: Pull complete
+53d0b71510d8: Pull complete
+8fbb724fde85: Pull complete
+43bf0df49962: Pull complete
+4393adcb5639: Pull complete
+c926c0a40b48: Pull complete
+Pulling DB (mariadb:latest)...
+latest: Pulling from library/mariadb
+43f89b94cd7d: Pull complete
+db915624f10a: Pull complete
+3bc6448c1756: Pull complete
+47323281766d: Pull complete
+1bd0c55f38e1: Pull complete
+ef6d6236eafd: Pull complete
+5d598ba23b44: Pull complete
+2e14796d43ba: Pull complete
+Creating php_blog   ... done
+Creating mysql_blog ... done
+Attaching to mysql_blog, php_blog
+mysql_blog | 2023-11-21 12:57:59+00:00 [Note] [Entrypoint]: Entrypoint script for MariaDB Server 1:11.1.3+maria~ubu2204 started.
+mysql_blog | 2023-11-21 12:58:00+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+mysql_blog | 2023-11-21 12:58:00+00:00 [Note] [Entrypoint]: Entrypoint script for MariaDB Server 1:11.1.3+maria~ubu2204 started.
+mysql_blog | 2023-11-21 12:58:00+00:00 [Note] [Entrypoint]: Initializing database files
+mysql_blog | 2023-11-21 12:58:01 0 [Warning] mariadbd: io_uring_queue_init() failed with ENOSYS: check seccomp filters, and the kernel version (newer than 5.1 required)
+mysql_blog | 2023-11-21 12:58:01 0 [Warning] InnoDB: liburing disabled: falling back to innodb_use_native_aio=OFF
+mysql_blog | 
+mysql_blog | 
+mysql_blog | PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+mysql_blog | To do so, start the server, then issue the following command:
+mysql_blog | 
+mysql_blog | '/usr/bin/mariadb-secure-installation'
+mysql_blog | 
+mysql_blog | which will also give you the option of removing the test
+mysql_blog | databases and anonymous user created by default.  This is
+mysql_blog | strongly recommended for production servers.
+mysql_blog | 
+mysql_blog | See the MariaDB Knowledgebase at https://mariadb.com/kb
+mysql_blog | 
+mysql_blog | Please report any problems at https://mariadb.org/jira
+mysql_blog | 
+mysql_blog | The latest information about MariaDB is available at https://mariadb.org/.
+mysql_blog | 
+mysql_blog | Consider joining MariaDB's strong and vibrant community:
+mysql_blog | https://mariadb.org/get-involved/
+mysql_blog | 
+mysql_blog | 2023-11-21 12:58:03+00:00 [Note] [Entrypoint]: Database files initialized
+mysql_blog | 2023-11-21 12:58:03+00:00 [Note] [Entrypoint]: Starting temporary server
+mysql_blog | 2023-11-21 12:58:03+00:00 [Note] [Entrypoint]: Waiting for server startup
+mysql_blog | 2023-11-21 12:58:03 0 [Note] Starting MariaDB 11.1.3-MariaDB-1:11.1.3+maria~ubu2204 source revision 0f5613a25f27b8034645226a48c2dc1aa4562281 as process 161
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: Compressed tables use zlib 1.2.11
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: Using transactional memory
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: Number of transaction pools: 1
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: Using crc32 + pclmulqdq instructions
+mysql_blog | 2023-11-21 12:58:03 0 [Note] mariadbd: O_TMPFILE is not supported on /tmp (disabling future attempts)
+mysql_blog | 2023-11-21 12:58:03 0 [Warning] mariadbd: io_uring_queue_init() failed with ENOSYS: check seccomp filters, and the kernel version (newer than 5.1 required)
+mysql_blog | 2023-11-21 12:58:03 0 [Warning] InnoDB: liburing disabled: falling back to innodb_use_native_aio=OFF
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: Initializing buffer pool, total size = 128.000MiB, chunk size = 2.000MiB
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: Completed initialization of buffer pool
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: File system buffers for log disabled (block size=4096 bytes)
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: End of log at LSN=47763
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: Opened 3 undo tablespaces
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: 128 rollback segments in 3 undo tablespaces are active.
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: Setting file './ibtmp1' size to 12.000MiB. Physically writing the file full; Please wait ...
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: File './ibtmp1' size is now 12.000MiB.
+mysql_blog | 2023-11-21 12:58:03 0 [Note] InnoDB: log sequence number 47763; transaction id 14
+mysql_blog | 2023-11-21 12:58:03 0 [Note] Plugin 'FEEDBACK' is disabled.
+mysql_blog | 2023-11-21 12:58:03 0 [Note] Plugin 'wsrep-provider' is disabled.
+mysql_blog | 2023-11-21 12:58:03 0 [Warning] 'user' entry 'root@adc537689a3f' ignored in --skip-name-resolve mode.
+mysql_blog | 2023-11-21 12:58:03 0 [Warning] 'proxies_priv' entry '@% root@adc537689a3f' ignored in --skip-name-resolve mode.
+mysql_blog | 2023-11-21 12:58:03 0 [Note] mariadbd: Event Scheduler: Loaded 0 events
+mysql_blog | 2023-11-21 12:58:03 0 [Note] mariadbd: ready for connections.
+mysql_blog | Version: '11.1.3-MariaDB-1:11.1.3+maria~ubu2204'  socket: '/run/mysqld/mysqld.sock'  port: 0  mariadb.org binary distribution
+mysql_blog | 2023-11-21 12:58:04+00:00 [Note] [Entrypoint]: Temporary server started.
+mysql_blog | 2023-11-21 12:58:07+00:00 [Note] [Entrypoint]: Creating database database_blog
+mysql_blog | 2023-11-21 12:58:07+00:00 [Note] [Entrypoint]: Creating user custom_user
+mysql_blog | 2023-11-21 12:58:07+00:00 [Note] [Entrypoint]: Giving user custom_user access to schema database_blog
+mysql_blog | 2023-11-21 12:58:07+00:00 [Note] [Entrypoint]: Securing system users (equivalent to running mysql_secure_installation)
+mysql_blog | 
+mysql_blog | 2023-11-21 12:58:08+00:00 [Note] [Entrypoint]: Stopping temporary server
+mysql_blog | 2023-11-21 12:58:08 0 [Note] mariadbd (initiated by: unknown): Normal shutdown
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: FTS optimize thread exiting.
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Starting shutdown...
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Dumping buffer pool(s) to /var/lib/mysql/ib_buffer_pool
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Buffer pool(s) dump completed at 231121 12:58:08
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Removed temporary tablespace data file: "./ibtmp1"
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Shutdown completed; log sequence number 47763; transaction id 15
+mysql_blog | 2023-11-21 12:58:08 0 [Note] mariadbd: Shutdown complete
+mysql_blog | 
+mysql_blog | 2023-11-21 12:58:08+00:00 [Note] [Entrypoint]: Temporary server stopped
+mysql_blog | 
+mysql_blog | 2023-11-21 12:58:08+00:00 [Note] [Entrypoint]: MariaDB init process done. Ready for start up.
+mysql_blog | 
+mysql_blog | 2023-11-21 12:58:08 0 [Note] Starting MariaDB 11.1.3-MariaDB-1:11.1.3+maria~ubu2204 source revision 0f5613a25f27b8034645226a48c2dc1aa4562281 as process 1
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Compressed tables use zlib 1.2.11
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Using transactional memory
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Number of transaction pools: 1
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Using crc32 + pclmulqdq instructions
+mysql_blog | 2023-11-21 12:58:08 0 [Note] mariadbd: O_TMPFILE is not supported on /tmp (disabling future attempts)
+mysql_blog | 2023-11-21 12:58:08 0 [Warning] mariadbd: io_uring_queue_init() failed with ENOSYS: check seccomp filters, and the kernel version (newer than 5.1 required)
+mysql_blog | 2023-11-21 12:58:08 0 [Warning] InnoDB: liburing disabled: falling back to innodb_use_native_aio=OFF
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Initializing buffer pool, total size = 128.000MiB, chunk size = 2.000MiB
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Completed initialization of buffer pool
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: File system buffers for log disabled (block size=4096 bytes)
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: End of log at LSN=47763
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Opened 3 undo tablespaces
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: 128 rollback segments in 3 undo tablespaces are active.
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Setting file './ibtmp1' size to 12.000MiB. Physically writing the file full; Please wait ...
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: File './ibtmp1' size is now 12.000MiB.
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: log sequence number 47763; transaction id 14
+mysql_blog | 2023-11-21 12:58:08 0 [Note] Plugin 'FEEDBACK' is disabled.
+mysql_blog | 2023-11-21 12:58:08 0 [Note] Plugin 'wsrep-provider' is disabled.
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Loading buffer pool(s) from /var/lib/mysql/ib_buffer_pool
+mysql_blog | 2023-11-21 12:58:08 0 [Note] InnoDB: Buffer pool(s) load completed at 231121 12:58:08
+mysql_blog | 2023-11-21 12:58:08 0 [Note] Server socket created on IP: '0.0.0.0'.
+mysql_blog | 2023-11-21 12:58:08 0 [Note] Server socket created on IP: '::'.
+mysql_blog | 2023-11-21 12:58:08 0 [Note] mariadbd: Event Scheduler: Loaded 0 events
+mysql_blog | 2023-11-21 12:58:08 0 [Note] mariadbd: ready for connections.
+mysql_blog | Version: '11.1.3-MariaDB-1:11.1.3+maria~ubu2204'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
+php_blog | AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 172.18.0.3. Set the 'ServerName' directive globally to suppress this message
+php_blog | AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 172.18.0.3. Set the 'ServerName' directive globally to suppress this message
+php_blog | [Tue Nov 21 12:58:18.980668 2023] [mpm_prefork:notice] [pid 1] AH00163: Apache/2.4.57 (Debian) PHP/8.2.12 configured -- resuming normal operations
+php_blog | [Tue Nov 21 12:58:18.980727 2023] [core:notice] [pid 1] AH00094: Command line: 'apache2 -D FOREGROUND'
+
+
+
+[root@stapp02 steve]# docker image list
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+mariadb      latest    0bbb547c411a   5 days ago    404MB
+php          apache    05b3e5c4255b   2 weeks ago   503MB
+
+[root@stapp02 steve]# docker ps -a
+CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS          PORTS                                                      NAMES
+adc537689a3f   mariadb:latest   "docker-entrypoint.s…"   56 seconds ago   Up 44 seconds    0.0.0.0:3306->3306/tcp   mysql_blog
+4837f07341a1   php:apache       "docker-php-entrypoi…"   56 seconds ago   Up 25 seconds   0.0.0.0:3004->80/tcp       php_blog
+
+
+[root@stapp02 steve]# ip a
+    inet 172.16.238.11/24 brd 172.16.238.255 scope global eth0
+       valid_lft forever preferred_lft forever
+
+[root@stapp02 steve]# curl  172.16.238.11:3004
+<html>
+    <head>
+        <title>Welcome to xFusionCorp Industries!</title>
+    </head>
+    <body>
+        Welcome to xFusionCorp Industries!    </body>
+
+thor@jump_host ~$ curl  172.16.238.11:3004
+<html>
+    <head>
+        <title>Welcome to xFusionCorp Industries!</title>
+    </head>
+
+    <body>
+        Welcome to xFusionCorp Industries!    </body>
+
+
+root@adc537689a3f:/var/lib/mysql# apt-get install mysql-client
+root@adc537689a3f:/var/lib/mysql# mysql -u custom_user -p 
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 5
+Server version: 11.1.3-MariaDB-1:11.1.3+maria~ubu2204 mariadb.org binary distribution
+
+Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> 
