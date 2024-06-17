@@ -1,0 +1,190 @@
+One of the Nautilus DevOps team members was working on to update an existing Kubernetes template. Somehow, he made some mistakes in the template and it is failing while applying. We need to fix this as soon as possible, so take a look into it and make sure you are able to apply it without any issues. Also, do not remove any component from the template like pods/deployments/volumes etc.
+/home/thor/mysql_deployment.yml is the template that needs to be fixed.
+
+
+apiVersion: v1 
+kind: PersistentVolume            
+metadata:
+  name: mysql-pv
+spec:
+  storageClassName: standard      
+  capacity:
+    storage: 250M
+  accessModes: 
+    - ReadWriteOnce
+  hostPath:                       
+    path: "/mnt/data" 
+  persistentVolumeReclaimPolicy: Retain  
+---    
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 250M
+  storageClassName: standard
+---
+apiVersion: v1                    
+kind: Service                      
+metadata:
+  name: mysql         
+  labels:             
+    app: mysql-app
+spec:
+  type: NodePort
+  ports:
+    - targetPort: 3306
+      port: 3306
+      nodePort: 30011
+  selector:    
+    app: mysql-app
+    tier: mysql
+---
+apiVersion: apps/v1
+kind: Deployment            
+metadata:
+  name: mysql-deployment       
+  labels:                       
+    app: mysql-app 
+spec:
+  selector:
+    matchLabels:
+      app: mysql-app
+      tier: mysql 
+  strategy:
+      type: Recreate
+  template:                    
+    metadata:
+      labels:                  
+        app: mysql-app
+        tier: mysql 
+    spec:                       
+      containers: 
+        - image: mysql:5.6 
+          name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage 
+              mountPath: /var/lib/mysql
+          env:                        
+            - name: MYSQL_ROOT_PASSWORD 
+              valueFrom:                
+                secretKeyRef: 
+                  name: mysql-root-pass 
+                  key: password 
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef: 
+                  name: mysql-db-url 
+                  key: database 
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+          ports:
+            - containerPort: 3306        
+              name: mysql
+      volumes:                       
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+
+
+
+hor@jump_host ~$ kubectl create -f mysql_deployment.yml 
+persistentvolume/mysql-pv created
+persistentvolumeclaim/mysql-pv-claim created
+service/mysql created
+deployment.apps/mysql-deployment created
+
+
+thor@jump_host ~$ kubectl get pvc,pv
+NAME                                   STATUS   VOLUME     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/mysql-pv-claim   Bound    mysql-pv   250M       RWO            standard       29s
+
+NAME                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                    STORAGECLASS   REASON   AGE
+persistentvolume/mysql-pv   250M       RWO            Retain           Bound    default/mysql-pv-claim   standard                29s
+
+thor@jump_host ~$ kubectl get storageclasses.storage.k8s.io 
+NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  48m
+
+thor@jump_host ~$ kubectl get all
+NAME                                   READY   STATUS    RESTARTS   AGE
+pod/mysql-deployment-944888cd8-v9fc6   1/1     Running   0          44s
+
+NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
+service/kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP          48m
+service/mysql        NodePort    10.96.66.255   <none>        3306:30011/TCP   44s
+
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/mysql-deployment   1/1     1            1           44s
+
+NAME                                         DESIRED   CURRENT   READY   AGE
+replicaset.apps/mysql-deployment-944888cd8   1         1         1       44s
+
+
+thor@jump_host ~$ kubectl describe deployments.apps mysql-deployment 
+Name:               mysql-deployment
+Namespace:          default
+CreationTimestamp:  Fri, 01 Dec 2023 13:12:41 +0000
+Labels:             app=mysql-app
+Annotations:        deployment.kubernetes.io/revision: 1
+Selector:           app=mysql-app,tier=mysql
+Replicas:           1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:       Recreate
+MinReadySeconds:    0
+Pod Template:
+  Labels:  app=mysql-app
+           tier=mysql
+  Containers:
+   mysql:
+    Image:      mysql:5.6
+    Port:       3306/TCP
+    Host Port:  0/TCP
+    Environment:
+      MYSQL_ROOT_PASSWORD:  <set to the key 'password' in secret 'mysql-root-pass'>  Optional: false
+      MYSQL_DATABASE:       <set to the key 'database' in secret 'mysql-db-url'>     Optional: false
+      MYSQL_USER:           <set to the key 'username' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_PASSWORD:       <set to the key 'password' in secret 'mysql-user-pass'>  Optional: false
+    Mounts:
+      /var/lib/mysql from mysql-persistent-storage (rw)
+  Volumes:
+   mysql-persistent-storage:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  mysql-pv-claim
+    ReadOnly:   false
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   mysql-deployment-944888cd8 (1/1 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  68s   deployment-controller  Scaled up replica set mysql-deployment-944888cd8 to 1
+
+thor@jump_host ~$ kubectl describe storageclasses.storage.k8s.io 
+Name:            standard
+IsDefaultClass:  Yes
+Annotations:     kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"},"name":"standard"},"provisioner":"rancher.io/local-path","reclaimPolicy":"Delete","volumeBindingMode":"WaitForFirstConsumer"}
+,storageclass.kubernetes.io/is-default-class=true
+Provisioner:           rancher.io/local-path
+Parameters:            <none>
+AllowVolumeExpansion:  <unset>
+MountOptions:          <none>
+ReclaimPolicy:         Delete
+VolumeBindingMode:     WaitForFirstConsumer
+Events:                <none>
