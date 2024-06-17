@@ -1,0 +1,82 @@
+Create a deployment using gcr.io/kodekloud/centos-ssh-enabled:node image, replica count must be 2.
+Create a service to expose this app, the service type must be NodePort, targetPort must be 8080 and nodePort should be 30012.
+Make sure all the pods are in Running state after the deployment.
+You can check the application by clicking on NodeApp button on top bar.
+
+Deplyoyment.yaml:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: nodejs-deploy
+ labels:
+   app: nodejs
+spec:
+ replicas: 2
+ selector:
+   matchLabels:
+     app: nodejs
+ template:
+   metadata:
+     labels:
+       app: nodejs
+   spec:
+     containers:
+     - name: nodejs-container
+       image: gcr.io/kodekloud/centos-ssh-enabled:node
+       ports:
+       - containerPort: 8080
+
+
+thor@jump_host ~$ kubectl expose deployment nodejs-deploy --target-port=8080 --name=nodejs-service --type=NodePort
+thor@jump_host ~$ kubectl edit svc nodejs-service 
+thor@jump_host ~$ kubectl get svc nodejs-service -o yaml
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-11-15T07:20:21Z"
+  labels:
+    app: nodejs
+  name: nodejs-service
+  namespace: default
+  resourceVersion: "2803"
+  uid: 7cfdb3fb-c848-4981-bd79-74ad2cd6056f
+spec:
+  clusterIP: 10.96.193.73
+  clusterIPs:
+  - 10.96.193.73
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - nodePort: 30012
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: nodejs
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+
+thor@jump_host ~$ kubectl describe svc nodejs-service 
+Name:                     nodejs-service
+Namespace:                default
+Labels:                   app=nodejs
+Annotations:              <none>
+Selector:                 app=nodejs
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.193.73
+IPs:                      10.96.193.73
+Port:                     <unset>  8080/TCP
+TargetPort:               8080/TCP
+NodePort:                 <unset>  30012/TCP
+Endpoints:                10.244.0.7:8080,10.244.0.8:8080
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+
