@@ -1,0 +1,202 @@
+There are some applications that need to be deployed on Kubernetes cluster and these apps have some pre-requisites where some configurations need to be changed before deploying the app container. Some of these changes cannot be made inside the images so the DevOps team has come up with a solution to use init containers to perform these tasks during deployment. Below is a sample scenario that the team is going to test first.
+1.Create a Deployment named as ic-deploy-nautilus.
+2.Configure spec as replicas should be 1, labels app should be ic-nautilus, template's metadata lables app should be the same ic-nautilus.
+3.The initContainers should be named as ic-msg-nautilus, use image centos, preferably with latest tag and use command '/bin/bash', '-c' and 'echo Init Done - Welcome to xFusionCorp Industries > /ic/news'. The volume mount should be named as ic-volume-nautilus and mount path should be /ic.
+4.Main container should be named as ic-main-nautilus, use image centos, preferably with latest tag and use command '/bin/bash', '-c' and 'while true; do cat /ic/news; sleep 5; done'. The volume mount should be named as ic-volume-nautilus and mount path should be /ic.
+Volume to be named as ic-volume-nautilus and it should be an emptyDir type.
+
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ic-deploy-nautilus
+  labels:
+    app: ic-nautilus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ic-nautilus
+  template:
+    metadata:
+      labels:
+        app: ic-nautilus
+    spec:
+      containers:
+        - name: ic-main-nautilus
+          image: centos:latest
+          command: ['/bin/bash', '-c', 'while true; do cat /ic/news; sleep 5; done']
+          volumeMounts:
+            - name: ic-volume-nautilus
+              mountPath: /ic
+      initContainers:
+        - name: ic-msg-nautilus
+          image: centos:latest
+          command: ['bin/bash', '-c', 'echo Init Done - Welcome to xFusionCorp Industries > /ic/news']
+          volumeMounts:
+            - name: ic-volume-nautilus
+              mountPath: /ic
+      volumes:
+        - name: ic-volume-nautilus
+          emptyDir: {}
+
+thor@jump_host ~$ kubectl create -f depl.yaml
+
+
+
+thor@jump_host ~$ kubectl describe deployments.apps 
+Name:                   ic-deploy-nautilus
+Namespace:              default
+CreationTimestamp:      Wed, 29 Nov 2023 10:09:09 +0000
+Labels:                 app=ic-nautilus
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=ic-nautilus
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=ic-nautilus
+  Init Containers:
+   ic-msg-nautilus:
+    Image:      centos:latest
+    Port:       <none>
+    Host Port:  <none>
+    Command:
+      bin/bash
+      -c
+      echo Init Done - Welcome to xFusionCorp Industries > /ic/news
+    Environment:  <none>
+    Mounts:
+      /ic from ic-volume-nautilus (rw)
+  Containers:
+   ic-main-nautilus:
+    Image:      centos:latest
+    Port:       <none>
+    Host Port:  <none>
+    Command:
+      /bin/bash
+      -c
+      while true; do cat /ic/news; sleep 5; done
+    Environment:  <none>
+    Mounts:
+      /ic from ic-volume-nautilus (rw)
+  Volumes:
+   ic-volume-nautilus:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   ic-deploy-nautilus-79bf9b94c6 (1/1 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  55s   deployment-controller  Scaled up replica set ic-deploy-nautilus-79bf9b94c6 to 1
+thor@jump_host ~$ 
+
+
+
+thor@jump_host ~$ kubectl describe pods ic-deploy-nautilus-79bf9b94c6-td9gw 
+Name:             ic-deploy-nautilus-79bf9b94c6-td9gw
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             kodekloud-control-plane/172.17.0.2
+Start Time:       Wed, 29 Nov 2023 10:09:09 +0000
+Labels:           app=ic-nautilus
+                  pod-template-hash=79bf9b94c6
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.5
+IPs:
+  IP:           10.244.0.5
+Controlled By:  ReplicaSet/ic-deploy-nautilus-79bf9b94c6
+Init Containers:
+  ic-msg-nautilus:
+    Container ID:  containerd://293ef85e44dcedaebd27920d7fa02cc8cc48c46c881067abc70cdae98ebe7f26
+    Image:         centos:latest
+    Image ID:      docker.io/library/centos@sha256:a27fd8080b517143cbbbab9dfb7c8571c40d67d534bbdee55bd6c473f432b177
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      bin/bash
+      -c
+      echo Init Done - Welcome to xFusionCorp Industries > /ic/news
+    State:          Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Wed, 29 Nov 2023 10:09:19 +0000
+      Finished:     Wed, 29 Nov 2023 10:09:19 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /ic from ic-volume-nautilus (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-ss2pj (ro)
+Containers:
+  ic-main-nautilus:
+    Container ID:  containerd://6ac60929c9674333775617bd54a1a2ee5ad76b8ee8d27a2dfa954e10e4a59483
+    Image:         centos:latest
+    Image ID:      docker.io/library/centos@sha256:a27fd8080b517143cbbbab9dfb7c8571c40d67d534bbdee55bd6c473f432b177
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /bin/bash
+      -c
+      while true; do cat /ic/news; sleep 5; done
+    State:          Running
+      Started:      Wed, 29 Nov 2023 10:09:20 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /ic from ic-volume-nautilus (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-ss2pj (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  ic-volume-nautilus:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-ss2pj:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  84s   default-scheduler  Successfully assigned default/ic-deploy-nautilus-79bf9b94c6-td9gw to kodekloud-control-plane
+  Normal  Pulling    83s   kubelet            Pulling image "centos:latest"
+  Normal  Pulled     75s   kubelet            Successfully pulled image "centos:latest" in 8.84982446s (8.849838386s including waiting)
+  Normal  Created    74s   kubelet            Created container ic-msg-nautilus
+  Normal  Started    74s   kubelet            Started container ic-msg-nautilus
+  Normal  Pulling    73s   kubelet            Pulling image "centos:latest"
+  Normal  Pulled     73s   kubelet            Successfully pulled image "centos:latest" in 283.371833ms (283.388211ms including waiting)
+  Normal  Created    73s   kubelet            Created container ic-main-nautilus
+  Normal  Started    73s   kubelet            Started container ic-main-nautilus
+
+thor@jump_host ~$ kubectl exec -it ic-deploy-nautilus-79bf9b94c6-td9gw -c ic-main-nautilus -- sh
+sh-4.4# cd /ic/
+sh-4.4# ls
+news
+sh-4.4# cat news 
+Init Done - Welcome to xFusionCorp Industries
+sh-4.4# 
