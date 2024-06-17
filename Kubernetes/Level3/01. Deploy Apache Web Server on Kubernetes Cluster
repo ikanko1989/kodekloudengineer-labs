@@ -1,0 +1,87 @@
+Create a namespace named as httpd-namespace-devops.
+Create a deployment named as httpd-deployment-devops under newly created namespace. For the deployment use httpd image with latest tag only and remember to mention the tag i.e httpd:latest, and make sure replica counts are 2.
+Create a service named as httpd-service-devops under same namespace to expose the deployment, nodePort should be 30004.
+
+thor@jump_host ~$ kubectl create ns httpd-namespace-devops
+thor@jump_host ~$ vi depl.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpd-deployment-devops
+  namespace: httpd-namespace-devops
+  labels:
+    app: httpd
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: httpd
+  template:
+    metadata:
+      labels:
+        app: httpd
+    spec:
+      containers:
+      - name: httpd
+        image: httpd:latest
+        ports:
+        - containerPort: 80
+
+thor@jump_host ~$ kubectl create -f depl.yaml 
+
+thor@jump_host ~$ kubectl expose deployment -n httpd-namespace-devops httpd-deployment-devops --type=NodePort --name=httpd-service-devops  
+thor@jump_host ~$ kubectl edit svc -n httpd-namespace-devops httpd-service-devops 
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-11-27T08:13:08Z"
+  labels:
+    app: httpd
+  name: httpd-service-devops
+  namespace: httpd-namespace-devops
+  resourceVersion: "2627"
+  uid: 62cec181-db01-4975-a7b5-c5c31935d8f2
+spec:
+  clusterIP: 10.96.151.178
+  clusterIPs:
+  - 10.96.151.178
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - nodePort: 30004
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: httpd
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+
+thor@jump_host ~$ kubectl get svc -n httpd-namespace-devops httpd-service-devops 
+NAME                   TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+httpd-service-devops   NodePort   10.96.151.178   <none>        80:30004/TCP   4m2s
+
+thor@jump_host ~$ kubectl describe svc -n httpd-namespace-devops httpd-service-devops 
+Name:                     httpd-service-devops
+Namespace:                httpd-namespace-devops
+Labels:                   app=httpd
+Annotations:              <none>
+Selector:                 app=httpd
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.151.178
+IPs:                      10.96.151.178
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  30004/TCP
+Endpoints:                10.244.0.5:80,10.244.0.6:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+
