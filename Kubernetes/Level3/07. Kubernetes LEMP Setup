@@ -1,0 +1,670 @@
+The Nautilus DevOps team want to deploy a static website on Kubernetes cluster. They are going to use Nginx, phpfpm and MySQL for the database. The team had already gathered the requirements and now they want to make this website live. Below you can find more details:
+1.Create some secrets for MySQL.
+Create a secret named mysql-root-pass wih key/value pairs as below:
+name:password
+value:R00t
+
+Create a secret named mysql-user-pass with key/value pairs as below:
+name:username
+value:kodekloud_aim
+name:password
+value:TmPcZjtRQx
+
+Create a secret named mysql-db-url with key/value pairs as below:
+name:database
+value:kodekloud_db9
+
+Create a secret named mysql-host with key/value pairs as below:
+name:host
+value:mysql-service
+
+2.Create a config map php-config for php.ini with variables_order = "EGPCS" data.
+3.Create a deployment named lemp-wp.
+4.Create two containers under it. First container must be nginx-php-container using image webdevops/php-nginx:alpine-3-php7 and second container must be mysql-container from image mysql:5.6. Mount php-config configmap in nginx container at /opt/docker/etc/php/php.ini location.
+5) Add some environment variables for both containers:
+	MYSQL_ROOT_PASSWORD, MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD and MYSQL_HOST. Take their values from the secrets you created. Please make sure to use env field (do not use envFrom) to define the name-value pair of environment variables.
+6) Create a node port type service lemp-service to expose the web application, nodePort must be 30008.
+7) Create a service for mysql named mysql-service and its port must be 3306.
+We already have a /tmp/index.php file on jump_host server.
+	Copy this file into the nginx container under document root i.e /app and replace the dummy values for mysql related variables with the environment variables you have set for mysql related parameters. Please make sure you do not hard code the mysql related details in this file, you must use the environment variables to fetch those values.
+	Once done, you must be able to access this website using Website button on the top bar, please note that you should see Connected successfully message while accessing this page.
+
+
+
+
+thor@jump_host ~$ cat deploymentALL.yaml 
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-root-pass
+type: Opaque
+stringData:
+  password: R00t
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-user-pass
+type: Opaque
+stringData:
+  username: kodekloud_aim
+  password: TmPcZjtRQx
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-db-url
+type: Opaque
+stringData:
+  database: kodekloud_db9
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-host
+type: Opaque
+stringData:
+  host: mysql-service
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: php-config
+data:
+  php.ini: |
+    variables_order = "EGPCS"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lemp-wp
+  labels:
+    app: lemp-wp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lemp-wp
+  template:
+    metadata:
+      name: lemp-wp
+      labels:
+        app: lemp-wp
+    spec:
+      containers:
+        - name: nginx-php-container
+          image: webdevops/php-nginx:alpine-3-php7
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /opt/docker/etc/php/php.ini
+              name: php-ini
+              subPath: php.ini
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-root-pass
+                  key: password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-db-url
+                  key: database
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+            - name: MYSQL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-host
+                  key: host
+        - name: mysql-container
+          image: mysql:5.6
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-root-pass
+                  key: password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-db-url
+                  key: database
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+            - name: MYSQL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-host
+                  key: host
+      volumes:
+        - name: php-ini
+          configMap:
+            name: php-config
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lemp-service
+spec:
+  selector:
+    app: lemp-wp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30008
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: lemp-wp
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP
+
+
+
+---
+thor@jump_host /tmp$ kubectl cp index.php lemp-wp-6df8f7969f-wpr6c:/app -c nginx-php-container
+
+thor@jump_host /tmp$ kubectl exec -it  lemp-wp-6df8f7969f-wpr6c -c nginx-php-container -- sh
+/ # cat /app/index.php 
+<?php
+$dbname = 'dbname';
+$dbuser = 'dbuser';
+$dbpass = 'dbpass';
+$dbhost = 'dbhost';
+$connect = mysqli_connect($dbhost, $dbuser, $dbpass) or die("Unable to Connect to '$dbhost'");
+$test_query = "SHOW TABLES FROM $dbname";
+$result = mysqli_query($test_query);
+if ($result->connect_error) {
+   die("Connection failed: " . $conn->connect_error);
+}
+  echo "Connected successfully";/ # 
+/ # 
+/ # 
+/ # 
+/ # printenv | grep MYSQL
+MYSQL_ROOT_PASSWORD=R00t
+MYSQL_SERVICE_PORT_3306_TCP_ADDR=10.96.2.217
+MYSQL_PASSWORD=dCV3szSGNA
+MYSQL_SERVICE_PORT_3306_TCP_PORT=3306
+MYSQL_SERVICE_SERVICE_HOST=10.96.2.217
+MYSQL_SERVICE_PORT_3306_TCP_PROTO=tcp
+MYSQL_HOST=mysql-service
+MYSQL_USER=kodekloud_aim
+MYSQL_SERVICE_PORT=tcp://10.96.2.217:3306
+MYSQL_SERVICE_SERVICE_PORT=3306
+MYSQL_SERVICE_PORT_3306_TCP=tcp://10.96.2.217:3306
+MYSQL_DATABASE=kodekloud_db9
+
+
+Edit envar;
+/ # vi /app/index.php 
+…
+
+
+/ # cat /app/index.php 
+<?php
+$dbname = $_ENV['MYSQL_DATABASE'];
+$dbuser = $_ENV['MYSQL_USER'];
+$dbpass = $_ENV['MYSQL_PASSWORD'];
+$dbhost = $_ENV['MYSQL_HOST'];
+$connect = mysqli_connect($dbhost, $dbuser, $dbpass) or die("Unable to Connect to '$dbhost'");
+$test_query = "SHOW TABLES FROM $dbname";
+$result = mysqli_query($test_query);
+if ($result->connect_error) {
+   die("Connection failed: " . $conn->connect_error);
+}
+  echo "Connected successfully";/ # 
+/ # 
+
+
+
+
+---
+
+thor@jump_host /tmp$ kubectl get all
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/lemp-wp-6df8f7969f-wpr6c   2/2     Running   0          7m19s
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+service/kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        94m
+service/lemp-service    NodePort    10.96.222.250   <none>        80:30008/TCP   10m
+service/mysql-service   ClusterIP   10.96.2.217     <none>        3306/TCP       10m
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/lemp-wp   1/1     1            1           7m19s
+NAME                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/lemp-wp-6df8f7969f   1         1         1       7m19s
+
+
+
+
+thor@jump_host /tmp$ kubectl describe pod
+Name:             lemp-wp-6df8f7969f-wpr6c
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             kodekloud-control-plane/172.17.0.2
+Start Time:       Fri, 01 Dec 2023 08:21:13 +0000
+Labels:           app=lemp-wp
+                  pod-template-hash=6df8f7969f
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.8
+IPs:
+  IP:           10.244.0.8
+Controlled By:  ReplicaSet/lemp-wp-6df8f7969f
+Containers:
+  nginx-php-container:
+    Container ID:   containerd://ad292e9741d7a1ff6d92d0c550fc1a300fa613329969e4aadd143ae6cee4ff0e
+    Image:          webdevops/php-nginx:alpine-3-php7
+    Image ID:       docker.io/webdevops/php-nginx@sha256:18ec363b4423ee3f5ba420bd9ce42c37717f64cbd17d2bb26d5b39dc26a45202
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Fri, 01 Dec 2023 08:21:14 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      MYSQL_ROOT_PASSWORD:  <set to the key 'password' in secret 'mysql-root-pass'>  Optional: false
+      MYSQL_DATABASE:       <set to the key 'database' in secret 'mysql-db-url'>     Optional: false
+      MYSQL_USER:           <set to the key 'username' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_PASSWORD:       <set to the key 'password' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_HOST:           <set to the key 'host' in secret 'mysql-host'>           Optional: false
+    Mounts:
+      /opt/docker/etc/php/php.ini from php-ini (rw,path="php.ini")
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-sz7df (ro)
+  mysql-container:
+    Container ID:   containerd://e3eb78cabc7ab7bc9b066e227113a5c3a794e883061ba602009a871411adf79d
+    Image:          mysql:5.6
+    Image ID:       docker.io/library/mysql@sha256:20575ecebe6216036d25dab5903808211f1e9ba63dc7825ac20cb975e34cfcae
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Fri, 01 Dec 2023 08:21:15 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      MYSQL_ROOT_PASSWORD:  <set to the key 'password' in secret 'mysql-root-pass'>  Optional: false
+      MYSQL_DATABASE:       <set to the key 'database' in secret 'mysql-db-url'>     Optional: false
+      MYSQL_USER:           <set to the key 'username' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_PASSWORD:       <set to the key 'password' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_HOST:           <set to the key 'host' in secret 'mysql-host'>           Optional: false
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-sz7df (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  php-ini:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      php-config
+    Optional:  false
+  kube-api-access-sz7df:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  7m32s  default-scheduler  Successfully assigned default/lemp-wp-6df8f7969f-wpr6c to kodekloud-control-plane
+  Normal  Pulled     7m31s  kubelet            Container image "webdevops/php-nginx:alpine-3-php7" already present on machine
+  Normal  Created    7m31s  kubelet            Created container nginx-php-container
+  Normal  Started    7m31s  kubelet            Started container nginx-php-container
+  Normal  Pulled     7m31s  kubelet            Container image "mysql:5.6" already present on machine
+  Normal  Created    7m31s  kubelet            Created container mysql-container
+  Normal  Started    7m30s  kubelet            Started container mysql-container
+
+
+
+
+thor@jump_host /tmp$ kubectl describe deployments.apps lemp-wp 
+Name:                   lemp-wp
+Namespace:              default
+CreationTimestamp:      Fri, 01 Dec 2023 08:21:13 +0000
+Labels:                 app=lemp-wp
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=lemp-wp
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=lemp-wp
+  Containers:
+   nginx-php-container:
+    Image:      webdevops/php-nginx:alpine-3-php7
+    Port:       <none>
+    Host Port:  <none>
+    Environment:
+      MYSQL_ROOT_PASSWORD:  <set to the key 'password' in secret 'mysql-root-pass'>  Optional: false
+      MYSQL_DATABASE:       <set to the key 'database' in secret 'mysql-db-url'>     Optional: false
+      MYSQL_USER:           <set to the key 'username' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_PASSWORD:       <set to the key 'password' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_HOST:           <set to the key 'host' in secret 'mysql-host'>           Optional: false
+    Mounts:
+      /opt/docker/etc/php/php.ini from php-ini (rw,path="php.ini")
+   mysql-container:
+    Image:      mysql:5.6
+    Port:       <none>
+    Host Port:  <none>
+    Environment:
+      MYSQL_ROOT_PASSWORD:  <set to the key 'password' in secret 'mysql-root-pass'>  Optional: false
+      MYSQL_DATABASE:       <set to the key 'database' in secret 'mysql-db-url'>     Optional: false
+      MYSQL_USER:           <set to the key 'username' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_PASSWORD:       <set to the key 'password' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_HOST:           <set to the key 'host' in secret 'mysql-host'>           Optional: false
+    Mounts:                 <none>
+  Volumes:
+   php-ini:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      php-config
+    Optional:  false
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   lemp-wp-6df8f7969f (1/1 replicas created)
+Events:
+  Type    Reason             Age    From                   Message
+  ----    ------             ----   ----                   -------
+  Normal  ScalingReplicaSet  7m48s  deployment-controller  Scaled up replica set lemp-wp-6df8f7969f to 1
+  
+  
+
+
+thor@jump_host /tmp$ kubectl describe secrets 
+Name:         mysql-db-url
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Type:  Opaque
+Data
+====
+database:  13 bytes
+
+Name:         mysql-host
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Type:  Opaque
+Data
+====
+host:  13 bytes
+
+Name:         mysql-root-pass
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Type:  Opaque
+Data
+====
+password:  4 bytes
+
+Name:         mysql-user-pass
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Type:  Opaque
+Data
+====
+username:  13 bytes
+password:  10 bytes
+
+thor@jump_host /tmp$ kubectl get secrets -o yaml 
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    database: a29kZWtsb3VkX2RiMw==
+  kind: Secret
+  metadata:
+    creationTimestamp: "2023-12-01T08:21:38Z"
+    name: mysql-db-url
+    namespace: default
+    resourceVersion: "7533"
+    uid: ffcf617e-35bd-41fc-a30c-d9912e97cb3a
+  type: Opaque
+- apiVersion: v1
+  data:
+    host: bXlzcWwtc2VydmljZQ==
+  kind: Secret
+  metadata:
+    creationTimestamp: "2023-12-01T08:21:38Z"
+    name: mysql-host
+    namespace: default
+    resourceVersion: "7534"
+    uid: 19407061-5909-4f7e-96d1-5fc28ff04b29
+  type: Opaque
+- apiVersion: v1
+  data:
+    password: UjAwdA==
+  kind: Secret
+  metadata:
+    creationTimestamp: "2023-12-01T08:21:38Z"
+    name: mysql-root-pass
+    namespace: default
+    resourceVersion: "7531"
+    uid: 9288c5c3-ab48-4d9a-b386-3f8b84aa2e63
+  type: Opaque
+- apiVersion: v1
+  data:
+    password: WWNoWkhSY0xrTA==
+    username: a29kZWtsb3VkX2NhcA==
+  kind: Secret
+  metadata:
+    creationTimestamp: "2023-12-01T08:21:38Z"
+    name: mysql-user-pass
+    namespace: default
+    resourceVersion: "7532"
+    uid: 7b459a92-f64d-4f54-8450-363590bb6806
+  type: Opaque
+kind: List
+metadata:
+  resourceVersion: ""
+
+
+thor@jump_host /tmp$ kubectl get cm
+NAME               DATA   AGE
+kube-root-ca.crt   1      95m
+php-config         1      11m
+
+thor@jump_host /tmp$ kubectl get cm php-config -o yaml
+  apiVersion: v1
+  data:
+    php.ini: |
+      variables_order = "EGPCS"
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: "2023-12-01T08:18:15Z"
+    name: php-config
+    namespace: default
+    resourceVersion: "7182"
+    uid: bd96074c-42a0-4648-91a7-50e9c0595669
+
+
+
+
+thor@jump_host /tmp$ kubectl get svc
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        96m
+lemp-service    NodePort    10.96.222.250   <none>        80:30008/TCP   12m
+mysql-service   ClusterIP   10.96.2.217     <none>        3306/TCP       12m
+thor@jump_host /tmp$ 
+
+
+thor@jump_host /tmp$ kubectl describe service 
+Name:              kubernetes
+Namespace:         default
+Labels:            component=apiserver
+                   provider=kubernetes
+Annotations:       <none>
+Selector:          <none>
+Type:              ClusterIP
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                10.96.0.1
+IPs:               10.96.0.1
+Port:              https  443/TCP
+TargetPort:        6443/TCP
+Endpoints:         172.17.0.2:6443
+Session Affinity:  None
+Events:            <none>
+
+Name:                     lemp-service
+Namespace:                default
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=lemp-wp
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.222.250
+IPs:                      10.96.222.250
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  30008/TCP
+Endpoints:                10.244.0.8:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+
+Name:              mysql-service
+Namespace:         default
+Labels:            <none>
+Annotations:       <none>
+Selector:          app=lemp-wp
+Type:              ClusterIP
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                10.96.2.217
+IPs:               10.96.2.217
+Port:              <unset>  3306/TCP
+TargetPort:        3306/TCP
+Endpoints:         10.244.0.8:3306
+Session Affinity:  None
+Events:            <none>
+
+thor@jump_host /tmp$ kubectl get service -o yaml
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2023-12-01T06:54:21Z"
+    labels:
+      component: apiserver
+      provider: kubernetes
+    name: kubernetes
+    namespace: default
+    resourceVersion: "228"
+    uid: 22c8f2da-3dc3-4d9a-a87c-9aa91911ab4d
+  spec:
+    clusterIP: 10.96.0.1
+    clusterIPs:
+    - 10.96.0.1
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 6443
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2023-12-01T08:18:15Z"
+    name: lemp-service
+    namespace: default
+    resourceVersion: "7198"
+    uid: 0727b620-093d-4646-ae3c-4ea3dd853526
+  spec:
+    clusterIP: 10.96.222.250
+    clusterIPs:
+    - 10.96.222.250
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - nodePort: 30008
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      app: lemp-wp
+    sessionAffinity: None
+    type: NodePort
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: "2023-12-01T08:18:16Z"
+    name: mysql-service
+    namespace: default
+    resourceVersion: "7203"
+    uid: 94af366a-63d7-4fa4-aec3-2ccf67f151c9
+  spec:
+    clusterIP: 10.96.2.217
+    clusterIPs:
+    - 10.96.2.217
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - port: 3306
+      protocol: TCP
+      targetPort: 3306
+    selector:
+      app: lemp-wp
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""
