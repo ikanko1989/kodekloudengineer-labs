@@ -1,0 +1,236 @@
+The Nautilus DevOps teams is planning to set up a Grafana tool to collect and analyze analytics from some applications. They are planning to deploy it on Kubernetes cluster. Below you can find more details.
+
+1.) Create a deployment named  grafana-deployment-nautilus using any grafana image for Grafana app. Set other parameters as per your choice.
+2.) Create NodePort type service with nodePort 32000 to expose the app.
+
+You need not to make any configuration changes inside the Grafana app once deployed, just make sure you are able to access the Grafana login page.
+
+
+PVC YAML:
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+
+DEPLOYMENT YAML:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grafana
+  name: grafana-deployment-nautilus
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        fsGroup: 472
+        supplementalGroups:
+          - 0
+      containers:
+        - name: grafana
+          image: grafana/grafana:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http-grafana
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /robots.txt
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 2
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3000
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 250m
+              memory: 750Mi
+          volumeMounts:
+            - mountPath: /var/lib/grafana
+              name: grafana-pv
+      volumes:
+        - name: grafana-pv
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+
+SVC YAML:
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-11-13T08:01:37Z"
+  labels:
+    app: grafana
+  name: grafana
+  namespace: default
+  resourceVersion: "2275"
+  uid: a92bde2a-a4c5-4a9d-bf4d-81f127b4ca6f
+spec:
+  clusterIP: 10.96.75.147
+  clusterIPs:
+  - 10.96.75.147
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - nodePort: 32000
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: grafana
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+
+
+thor@jump_host ~$ kubectl get svc grafana 
+NAME      TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
+grafana   NodePort   10.96.75.147   <none>        3000:32000/TCP   12m
+
+thor@jump_host ~$ kubectl describe svc grafana 
+Name:                     grafana
+Namespace:                default
+Labels:                   app=grafana
+Annotations:              <none>
+Selector:                 app=grafana
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.75.147
+IPs:                      10.96.75.147
+Port:                     <unset>  3000/TCP
+TargetPort:               3000/TCP
+NodePort:                 <unset>  32000/TCP
+Endpoints:                10.244.0.6:3000
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+
+thor@jump_host ~$ kubectl describe deployments.apps grafana 
+Name:                   grafana-deployment-nautilus
+Namespace:              default
+CreationTimestamp:      Mon, 13 Nov 2023 07:54:38 +0000
+Labels:                 app=grafana
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=grafana
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=grafana
+  Containers:
+   grafana:
+    Image:      grafana/grafana:latest
+    Port:       3000/TCP
+    Host Port:  0/TCP
+    Requests:
+      cpu:        250m
+      memory:     750Mi
+    Liveness:     tcp-socket :3000 delay=30s timeout=1s period=10s #success=1 #failure=3
+    Readiness:    http-get http://:3000/robots.txt delay=10s timeout=2s period=30s #success=1 #failure=3
+    Environment:  <none>
+    Mounts:
+      /var/lib/grafana from grafana-pv (rw)
+  Volumes:
+   grafana-pv:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  grafana-pvc
+    ReadOnly:   false
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   grafana-684d8b87db (1/1 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  21m   deployment-controller  Scaled up replica set grafana-684d8b87db to 1
+
+
+
+
+thor@jump_host ~$ kubectl get pvc grafana-pvc 
+NAME          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+grafana-pvc   Bound    pvc-378d4c93-0369-46e4-b0e5-e4d256d83215   1Gi        RWO            standard       20m
+thor@jump_host ~$ kubectl describe pvc grafana-pvc 
+Name:          grafana-pvc
+Namespace:     default
+StorageClass:  standard
+Status:        Bound
+Volume:        pvc-378d4c93-0369-46e4-b0e5-e4d256d83215
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+               volume.beta.kubernetes.io/storage-provisioner: rancher.io/local-path
+               volume.kubernetes.io/selected-node: kodekloud-control-plane
+               volume.kubernetes.io/storage-provisioner: rancher.io/local-path
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      1Gi
+Access Modes:  RWO
+VolumeMode:    Filesystem
+Used By:       grafana-684d8b87db-jkvjm
+Events:
+  Type    Reason                 Age                From                                                                                                Message
+  ----    ------                 ----               ----                                                                                                -------
+  Normal  WaitForPodScheduled    20m                persistentvolume-controller                                                                         waiting for pod grafana-684d8b87db-jkvjm to be scheduled
+  Normal  ExternalProvisioning   20m (x2 over 20m)  persistentvolume-controller                                                                         waiting for a volume to be created, either by external provisioner "rancher.io/local-path" or manually created by system administrator
+  Normal  Provisioning           20m                rancher.io/local-path_local-path-provisioner-6bc4bddd6b-x86v9_478059f5-743e-4c42-9998-ac3e8bd5b58c  External provisioner is provisioning volume for claim "default/grafana-pvc"
+  Normal  ProvisioningSucceeded  20m                rancher.io/local-path_local-path-provisioner-6bc4bddd6b-x86v9_478059f5-743e-4c42-9998-ac3e8bd5b58c  Successfully provisioned volume pvc-378d4c93-0369-46e4-b0e5-e4d256d83215
+
+
+thor@jump_host ~$ kubectl get pv pvc-378d4c93-0369-46e4-b0e5-e4d256d83215 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                 STORAGECLASS   REASON   AGE
+pvc-378d4c93-0369-46e4-b0e5-e4d256d83215   1Gi        RWO            Delete           Bound    default/grafana-pvc   standard                21m
+
+
+thor@jump_host ~$ kubectl describe pv pvc-378d4c93-0369-46e4-b0e5-e4d256d83215 
+Name:              pvc-378d4c93-0369-46e4-b0e5-e4d256d83215
+Labels:            <none>
+Annotations:       pv.kubernetes.io/provisioned-by: rancher.io/local-path
+Finalizers:        [kubernetes.io/pv-protection]
+StorageClass:      standard
+Status:            Bound
+Claim:             default/grafana-pvc
+Reclaim Policy:    Delete
+Access Modes:      RWO
+VolumeMode:        Filesystem
+Capacity:          1Gi
+Node Affinity:     
+  Required Terms:  
+    Term 0:        kubernetes.io/hostname in [kodekloud-control-plane]
+Message:           
+Source:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/local-path-provisioner/pvc-378d4c93-0369-46e4-b0e5-e4d256d83215_default_grafana-pvc
+    HostPathType:  DirectoryOrCreate
+Events:            <none>
