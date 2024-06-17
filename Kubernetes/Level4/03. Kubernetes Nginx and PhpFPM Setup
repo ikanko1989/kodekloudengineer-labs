@@ -1,0 +1,238 @@
+The Nautilus Application Development team is planning to deploy one of the php-based applications on Kubernetes cluster. As per the recent discussion with DevOps team, they have decided to use nginx and phpfpm. 
+Additionally, they also shared some custom configuration requirements. Below you can find more details. Please complete this task as per requirements mentioned below:
+
+
+1) Create a service to expose this app, the service type must be NodePort, nodePort should be 30012.
+
+2.) Create a config map named nginx-config for nginx.conf as we want to add some custom settings in nginx.conf.
+
+a) Change the default port 80 to 8091 in nginx.conf.
+
+b) Change the default document root /usr/share/nginx to /var/www/html in nginx.conf.
+
+c) Update the directory index to index index.html index.htm index.php in nginx.conf.
+
+3.) Create a pod named nginx-phpfpm .
+
+b) Create a shared volume named shared-files that will be used by both containers (nginx and phpfpm) also it should be a emptyDir volume.
+
+c) Map the ConfigMap we declared above as a volume for nginx container. Name the volume as nginx-config-volume, mount path should be /etc/nginx/nginx.conf and subPath should be nginx.conf
+
+d) Nginx container should be named as nginx-container and it should use nginx:latest image. PhpFPM container should be named as php-fpm-container and it should use php:7.3-fpm-alpine image.
+
+e) The shared volume shared-files should be mounted at /var/www/html location in both containers. Copy /opt/index.php from jump host to the nginx document root inside the nginx container, once done you can access the app using App button on the top bar.
+
+Before clicking on finish button always make sure to check if all pods are in running state.
+
+You can use any labels as per your choice.
+
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8091
+      nodePort: 30012
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-fpm-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        listen 8091;
+        index index.html index.htm index.php;
+        root  /var/www/html;
+        location ~ \.php$ {
+          include fastcgi_params;
+          fastcgi_param REQUEST_METHOD $request_method;
+          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+          fastcgi_pass php-fpm-service:9000;
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-phpfpm
+  labels:
+    app: nginx
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - name: nginx-config-volume
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: shared-files
+          mountPath: /var/www/html
+    - name: php-fpm-container
+      image: php:8.2-fpm-alpine
+      volumeMounts:
+        - name: shared-files
+          mountPath: /var/www/html
+  restartPolicy: Always
+  volumes:
+    - name: shared-files
+      emptyDir: {}
+    - name: nginx-config-volume
+      configMap:
+        name: nginx-config
+
+
+thor@jump_host ~$ kubectl create -f depl.yaml
+########################################
+kubectl cp /opt/index.php nginx-phpfpm:/var/www/html -c nginx-container
+kubectl exec -it  nginx-phpfpm -c nginx-container -- sh
+# cd /var/www/html
+# cat index.php
+It works!# 
+
+
+#################################
+thor@jump_host ~$ kubectl get cm
+NAME               DATA   AGE
+kube-root-ca.crt   1      16m
+nginx-config       1      13s
+
+thor@jump_host ~$ kubectl describe cm nginx-config 
+Name:         nginx-config
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Data
+====
+nginx.conf:
+----
+events {}
+http {
+  server {
+    listen 8091;
+    index index.html index.htm index.php;
+    root  /var/www/html;
+    location ~ \.php$ {
+      include fastcgi_params;
+      fastcgi_param REQUEST_METHOD $request_method;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      fastcgi_pass php-fpm-service:9000;
+    }
+  }
+}
+
+BinaryData
+====
+Events:  <none>
+
+thor@jump_host /opt$ kubectl get svc
+NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+httpd-service     NodePort    10.96.4.189     <none>        80:30012/TCP   8m13s
+kubernetes        ClusterIP   10.96.0.1       <none>        443/TCP        27m
+php-fpm-service   ClusterIP   10.96.173.248   <none>        9000/TCP       8m13s
+
+thor@jump_host ~$ kubectl describe pods
+Name:             nginx-phpfpm
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             kodekloud-control-plane/172.17.0.2
+Start Time:       Tue, 05 Dec 2023 12:04:15 +0000
+Labels:           app=nginx
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.5
+IPs:
+  IP:  10.244.0.5
+Containers:
+  nginx-container:
+    Container ID:   containerd://f68eae0db5f3d0233b27318da2610eb2c66d4651d5483ed4437a90a757c79aa0
+    Image:          nginx:latest
+    Image ID:       docker.io/library/nginx@sha256:10d1f5b58f74683ad34eb29287e07dab1e90f10af243f151bb50aa5dbb4d62ee
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Tue, 05 Dec 2023 12:04:27 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /etc/nginx/nginx.conf from nginx-config-volume (rw,path="nginx.conf")
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-fq6pw (ro)
+      /var/www/html from shared-files (rw)
+  php-fpm-container:
+    Container ID:   containerd://abcd5637a56978199d5d8cde5156f9c0937d991a898bbe7ff006e7e1ea6aa433
+    Image:          php:8.2-fpm-alpine
+    Image ID:       docker.io/library/php@sha256:0eeb1e24231711e5e0b9a6e746cfd7fdc0a39682404cfccbebf8ff846f819bad
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Tue, 05 Dec 2023 12:04:31 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-fq6pw (ro)
+      /var/www/html from shared-files (rw)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  shared-files:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  nginx-config-volume:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      nginx-config
+    Optional:  false
+  kube-api-access-fq6pw:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  34s   default-scheduler  Successfully assigned default/nginx-phpfpm to kodekloud-control-plane
+  Normal  Pulling    33s   kubelet            Pulling image "nginx:latest"
+  Normal  Pulled     22s   kubelet            Successfully pulled image "nginx:latest" in 10.708758883s (10.708775434s including waiting)
+  Normal  Created    22s   kubelet            Created container nginx-container
+  Normal  Started    22s   kubelet            Started container nginx-container
+  Normal  Pulling    22s   kubelet            Pulling image "php:8.2-fpm-alpine"
+  Normal  Pulled     19s   kubelet            Successfully pulled image "php:8.2-fpm-alpine" in 3.57727095s (3.577282061s including waiting)
+  Normal  Created    19s   kubelet            Created container php-fpm-container
+  Normal  Started    18s   kubelet            Started container php-fpm-container
