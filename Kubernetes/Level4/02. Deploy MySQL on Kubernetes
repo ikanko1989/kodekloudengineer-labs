@@ -1,0 +1,300 @@
+A new MySQL server needs to be deployed on Kubernetes cluster. The Nautilus DevOps team was working on to gather the requirements. Recently they were able to finalize the requirements and shared them with the team members to start working on it. Below you can find the details:
+
+
+1.) Create a PersistentVolume mysql-pv, its capacity should be 250Mi, set other parameters as per your preference.
+
+2.) Create a PersistentVolumeClaim to request this PersistentVolume storage. Name it as mysql-pv-claim and request a 250Mi of storage. Set other parameters as per your preference.
+
+3.) Create a deployment named mysql-deployment, use any mysql image as per your preference. Mount the PersistentVolume at mount path /var/lib/mysql.
+
+4.) Create a NodePort type service named mysql and set nodePort to 30007.
+
+5.) Create a secret named mysql-root-pass having a key pair value, where key is password and its value is YUIidhb667, create another secret named mysql-user-pass having some key pair values, where frist key is username and its value is kodekloud_rin, second key is password and value is TmPcZjtRQx, create one more secret named mysql-db-url, key name is database and value is kodekloud_db5
+
+6.) Define some Environment variables within the container:
+
+a) name: MYSQL_ROOT_PASSWORD, should pick value from secretKeyRef name: mysql-root-pass and key: password
+
+b) name: MYSQL_DATABASE, should pick value from secretKeyRef name: mysql-db-url and key: database
+
+c) name: MYSQL_USER, should pick value from secretKeyRef name: mysql-user-pass key key: username
+
+d) name: MYSQL_PASSWORD, should pick value from secretKeyRef name: mysql-user-pass and key: password
+
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+spec:
+  capacity:
+    storage: 250Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: slow
+  hostPath:
+    path: "/mnt/devops"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 250Mi
+  storageClassName: slow
+
+
+
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-root-pass
+type: Opaque
+stringData:
+  password: YUIidhb667
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-user-pass
+type: Opaque
+stringData:
+  username: kodekloud_rin
+  password: TmPcZjtRQx
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-db-url
+type: Opaque
+stringData:
+  database: kodekloud_db5
+
+
+thor@jump_host ~$ kubectl create -f mysql-root-pass.yaml 
+thor@jump_host ~$ kubectl create -f mysql-user-pass.yaml 
+thor@jump_host ~$ kubectl create -f mysql-db-url.yaml 
+---
+apiVersion: apps/v1
+kind: Deployment            
+metadata:
+  name: mysql-deployment       
+  labels:                       
+    app: mysql-app 
+spec:
+  selector:
+    matchLabels:
+      app: mysql-app
+  template:                    
+    metadata:
+      labels:                  
+        app: mysql-app
+    spec:                       
+      containers: 
+        - image: mysql:8.2.0
+          name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage 
+              mountPath: /var/lib/mysql
+          env:                        
+            - name: MYSQL_ROOT_PASSWORD 
+              valueFrom:                
+                secretKeyRef: 
+                  name: mysql-root-pass 
+                  key: password 
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef: 
+                  name: mysql-db-url 
+                  key: database 
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-user-pass
+                  key: password
+          ports:
+            - containerPort: 3306        
+              name: mysql
+      volumes:                       
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+
+thor@jump_host ~$ kubectl create -f deploymnet.yaml 
+
+
+---
+kubectl expose deployment mysql-deployment --type=NodePort --name=mysql 
+edit NODEPORT to 30007!!
+#####################################################################
+hor@jump_host ~$ kubectl get pv,pvc
+NAME                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                    STORAGECLASS   REASON   AGE
+persistentvolume/mysql-pv   250Mi      RWO            Recycle          Bound    default/mysql-pv-claim   slow                    16s
+NAME                                   STATUS   VOLUME     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/mysql-pv-claim   Bound    mysql-pv   250Mi      RWO            slow           7s
+
+
+thor@jump_host ~$ kubectl describe pv,pvc
+Name:            mysql-pv
+Labels:          <none>
+Annotations:     pv.kubernetes.io/bound-by-controller: yes
+Finalizers:      [kubernetes.io/pv-protection]
+StorageClass:    slow
+Status:          Bound
+Claim:           default/mysql-pv-claim
+Reclaim Policy:  Recycle
+Access Modes:    RWO
+VolumeMode:      Filesystem
+Capacity:        250Mi
+Node Affinity:   <none>
+Message:         
+Source:
+    Type:          HostPath (bare host directory volume)
+    Path:          /mnt/devops
+    HostPathType:  
+Events:            <none>
+
+Name:          mysql-pv-claim
+Namespace:     default
+StorageClass:  slow
+Status:        Bound
+Volume:        mysql-pv
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      250Mi
+Access Modes:  RWO
+VolumeMode:    Filesystem
+Used By:       <none>
+Events:        <none>
+
+thor@jump_host ~$ kubectl get secrets 
+NAME              TYPE     DATA   AGE
+mysql-db-url      Opaque   1      7s
+mysql-root-pass   Opaque   1      16s
+mysql-user-pass   Opaque   2      11s
+
+
+thor@jump_host ~$ kubectl describe secrets 
+Name:         mysql-db-url
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Type:  Opaque
+Data
+====
+database:  13 bytes
+
+Name:         mysql-root-pass
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Type:  Opaque
+Data
+====
+password:  10 bytes
+
+Name:         mysql-user-pass
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Type:  Opaque
+Data
+====
+username:  13 bytes
+password:  10 bytes
+
+thor@jump_host ~$ kubectl get svc mysql 
+NAME    TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+mysql   NodePort   10.96.146.143   <none>        3306:30007/TCP   36s
+thor@jump_host ~$ kubectl get svc mysql -o yaml
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-12-05T08:24:12Z"
+  labels:
+    app: mysql-app
+  name: mysql
+  namespace: default
+  resourceVersion: "2737"
+  uid: ed8cc056-e41b-492d-9027-7ebf73a6f33c
+spec:
+  clusterIP: 10.96.146.143
+  clusterIPs:
+  - 10.96.146.143
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - nodePort: 30007
+    port: 3306
+    protocol: TCP
+    targetPort: 3306
+  selector:
+    app: mysql-app
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+
+  thor@jump_host ~$ kubectl describe deployments.apps 
+Name:                   mysql-deployment
+Namespace:              default
+CreationTimestamp:      Tue, 05 Dec 2023 08:22:29 +0000
+Labels:                 app=mysql-app
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=mysql-app
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=mysql-app
+  Containers:
+   mysql:
+    Image:      mysql:8.2.0
+    Port:       3306/TCP
+    Host Port:  0/TCP
+    Environment:
+      MYSQL_ROOT_PASSWORD:  <set to the key 'password' in secret 'mysql-root-pass'>  Optional: false
+      MYSQL_DATABASE:       <set to the key 'database' in secret 'mysql-db-url'>     Optional: false
+      MYSQL_USER:           <set to the key 'username' in secret 'mysql-user-pass'>  Optional: false
+      MYSQL_PASSWORD:       <set to the key 'password' in secret 'mysql-user-pass'>  Optional: false
+    Mounts:
+      /var/lib/mysql from mysql-persistent-storage (rw)
+  Volumes:
+   mysql-persistent-storage:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  mysql-pv-claim
+    ReadOnly:   false
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   mysql-deployment-57dcf4b675 (1/1 replicas created)
+Events:
+  Type    Reason             Age    From                   Message
+  ----    ------             ----   ----                   -------
+  Normal  ScalingReplicaSet  2m57s  deployment-controller  Scaled up replica set mysql-deployment-57dcf4b675 to 1
