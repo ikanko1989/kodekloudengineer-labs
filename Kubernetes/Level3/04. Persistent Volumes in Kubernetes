@@ -1,0 +1,206 @@
+The Nautilus DevOps team is working on a Kubernetes template to deploy a web application on the cluster. There are some requirements to create/use persistent volumes to store the application code, and the template needs to be designed accordingly. Please find more details below:
+1.Create a PersistentVolume named as pv-nautilus. Configure the spec as storage class should be manual, set capacity to 5Gi, set access mode to ReadWriteOnce, volume type should be hostPath and set path to /mnt/devops (this directory is already created, you might not be able to access it directly, so you need not to worry about it).
+2.Create a PersistentVolumeClaim named as pvc-nautilus. Configure the spec as storage class should be manual, request 2Gi of the storage, set access mode to ReadWriteOnce.
+3.Create a pod named as pod-nautilus, mount the persistent volume you created with claim name pvc-nautilus at document root of the web server, the container within the pod should be named as container-nautilus using image nginx with latest tag only (remember to mention the tag i.e nginx:latest).
+4. Create a node port type service named web-nautilus using node port 30008 to expose the web server running within the pod.
+
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-nautilus
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/devops"
+thor@jump_host ~$ kubectl create -f pv.yaml 
+
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-nautilus
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+thor@jump_host ~$ kubectl create -f pvc.yaml 
+
+
+
+
+
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-nautilus
+  labels:
+   app: nginx
+spec:
+  volumes:
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: pvc-nautilus
+  containers:
+    - name: container-nautilus
+      image: nginx:latest
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: task-pv-storage
+thor@jump_host ~$ kubectl create -f pod1.yaml
+
+
+---
+kubectl expose pod pod-nautilus --name=web-nautilus --type=NodePort --port 80
+edit nodePort to 30008!!
+
+
+thor@jump_host ~$ kubectl edit svc web-nautilus 
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-11-29T12:55:54Z"
+  labels:
+    app: nginx
+  name: web-nautilus
+  namespace: default
+  resourceVersion: "4056"
+  uid: 0fd0b7bb-e7a9-4171-9997-e65b9fabf7cf
+spec:
+  clusterIP: 10.96.39.35
+  clusterIPs:
+  - 10.96.39.35
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - nodePort: 30008
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+
+
+hor@jump_host ~$ kubectl get svc
+NAME           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
+kubernetes     ClusterIP   10.96.0.1     <none>        443/TCP        47m
+web-nautilus   NodePort    10.96.39.35   <none>        80:30008/TCP   82s
+thor@jump_host ~$ kubectl get pv,pvc
+NAME                           CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
+persistentvolume/pv-nautilus   5Gi        RWO            Retain           Bound    default/pvc-nautilus   manual                  12m
+NAME                                 STATUS   VOLUME        CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc-nautilus   Bound    pv-nautilus   5Gi        RWO            manual         12m
+
+
+
+thor@jump_host ~$ kubectl describe pv,pvc
+Name:            pv-nautilus
+Labels:          <none>
+Annotations:     pv.kubernetes.io/bound-by-controller: yes
+Finalizers:      [kubernetes.io/pv-protection]
+StorageClass:    manual
+Status:          Bound
+Claim:           default/pvc-nautilus
+Reclaim Policy:  Retain
+Access Modes:    RWO
+VolumeMode:      Filesystem
+Capacity:        5Gi
+Node Affinity:   <none>
+Message:         
+Source:
+    Type:          HostPath (bare host directory volume)
+    Path:          /mnt/devops
+    HostPathType:  
+Events:            <none>
+
+Name:          pvc-nautilus
+Namespace:     default
+StorageClass:  manual
+Status:        Bound
+Volume:        pv-nautilus
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      5Gi
+Access Modes:  RWO
+VolumeMode:    Filesystem
+Used By:       pod-nautilus
+Events:        <none>
+thor@jump_host ~$ 
+
+thor@jump_host ~$ kubectl describe pod pod-nautilus 
+Name:             pod-nautilus
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             kodekloud-control-plane/172.17.0.2
+Start Time:       Wed, 29 Nov 2023 12:54:47 +0000
+Labels:           app=nginx
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.6
+IPs:
+  IP:  10.244.0.6
+Containers:
+  container-nautilus:
+    Container ID:   containerd://8d28ba3f409bbee04c3bfd6ba8457c1903aa792fe1647b6ef45cee392b9575a9
+    Image:          nginx:latest
+    Image ID:       docker.io/library/nginx@sha256:10d1f5b58f74683ad34eb29287e07dab1e90f10af243f151bb50aa5dbb4d62ee
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Wed, 29 Nov 2023 12:54:48 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /usr/share/nginx/html from task-pv-storage (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-bhkkn (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  task-pv-storage:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  pvc-nautilus
+    ReadOnly:   false
+  kube-api-access-bhkkn:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  2m53s  default-scheduler  Successfully assigned default/pod-nautilus to kodekloud-control-plane
+  Normal  Pulling    2m53s  kubelet            Pulling image "nginx:latest"
+  Normal  Pulled     2m52s  kubelet            Successfully pulled image "nginx:latest" in 330.953975ms (330.974309ms including waiting)
+  Normal  Created    2m52s  kubelet            Created container container-nautilus
+  Normal  Started    2m52s  kubelet            Started container container-nautilus
