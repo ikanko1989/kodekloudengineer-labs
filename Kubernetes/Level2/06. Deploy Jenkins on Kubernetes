@@ -1,0 +1,139 @@
+The Nautilus DevOps team is planning to set up a Jenkins CI server to create/manage some deployment pipelines for some of the projects. They want to set up the Jenkins server on Kubernetes cluster. Below you can find more details about the task:
+Create a namespace jenkins
+Create a Service for jenkins deployment. Service name should be jenkins-service under jenkins namespace, type should be NodePort, nodePort should be 30008
+Create a Jenkins Deployment under jenkins namespace, It should be name as jenkins-deployment , labels app should be jenkins , container name should be jenkins-container , use jenkins/jenkins image , containerPort should be 8080 and replicas count should be 1.
+
+
+thor@jump_host ~$ kubectl create ns jenkins
+
+DEPL YAML:
+thor@jump_host ~$ cat dep.yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-deployment
+  namespace: jenkins
+  labels:
+    app: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins-container
+        image: jenkins/jenkins
+        ports:
+        - containerPort: 8080
+
+
+SVC YAML:
+thor@jump_host ~$ cat ser.yaml 
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-service
+  namespace: jenkins
+spec:
+  type: NodePort
+  selector:
+    app: jenkins
+  ports:
+    - port: 8080
+      # By default and for convenience, the `targetPort` is set to
+      # the same value as the `port` field.
+      targetPort: 8080
+      # Optional field
+      # By default and for convenience, the Kubernetes control plane
+      # will allocate a port from a range (default: 30000-32767)
+      nodePort: 30008
+
+
+thor@jump_host ~$ kubectl describe svc -n jenkins 
+Name:                     jenkins-service
+Namespace:                jenkins
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=jenkins
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.118.128
+IPs:                      10.96.118.128
+Port:                     <unset>  8080/TCP
+TargetPort:               8080/TCP
+NodePort:                 <unset>  30008/TCP
+Endpoints:                10.244.0.5:8080
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+thor@jump_host ~$ kubectl get svc -n jenkins 
+NAME              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+jenkins-service   NodePort   10.96.118.128   <none>        8080:30008/TCP   3m8s
+
+thor@jump_host ~$ kubectl describe pod -n jenkins 
+Name:             jenkins-deployment-667887d68c-cqw2l
+Namespace:        jenkins
+Priority:         0
+Service Account:  default
+Node:             kodekloud-control-plane/172.17.0.2
+Start Time:       Fri, 10 Nov 2023 11:06:16 +0000
+Labels:           app=jenkins
+                  pod-template-hash=667887d68c
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.5
+IPs:
+  IP:           10.244.0.5
+Controlled By:  ReplicaSet/jenkins-deployment-667887d68c
+Containers:
+  jenkins-container:
+    Container ID:   containerd://2464072500c76f0b9fde9a077896df172cad815160ca10fc2fcc5ee987b081e2
+    Image:          jenkins/jenkins
+    Image ID:       docker.io/jenkins/jenkins@sha256:a9023d98bd095b63932e12cfcd33b8d5a29ef21256273c9867baac6879aa52e9
+    Port:           8080/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Fri, 10 Nov 2023 11:06:33 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-ft677 (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  kube-api-access-ft677:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  5m29s  default-scheduler  Successfully assigned jenkins/jenkins-deployment-667887d68c-cqw2l to kodekloud-control-plane
+  Normal  Pulling    5m29s  kubelet            Pulling image "jenkins/jenkins"
+  Normal  Pulled     5m12s  kubelet            Successfully pulled image "jenkins/jenkins" in 16.611950465s (16.611967882s including waiting)
+  Normal  Created    5m12s  kubelet            Created container jenkins-container
+  Normal  Started    5m12s  kubelet            Started container jenkins-container
+
+
+
+thor@jump_host ~$ kubectl exec -it jenkins-deployment-667887d68c-cqw2l -n jenkins -c jenkins-container -- /bin/bash
+
+jenkins@jenkins-deployment-667887d68c-cqw2l:/$ cat /var/jenkins_home/secrets/initialAdminPassword 
+B8097d49ac2245e8b6c1930ec6930802
