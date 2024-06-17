@@ -1,0 +1,705 @@
+The Nautilus DevOps team want to deploy a PHP website on Kubernetes cluster. They are going to use Apache as a web server and Mysql for database. 
+The team had already gathered the requirements and now they want to make this website live. Below you can find more details:
+1) Create a config map php-config for php.ini with variables_order = "EGPCS" data.
+2) Create a deployment named lamp-wp.
+3) Create two containers under it. First container must be httpd-php-container using image webdevops/php-apache:alpine-3-php7 and second container must be mysql-container from image mysql:5.6. 
+Mount php-config configmap in httpd container at /opt/docker/etc/php/php.ini location.
+4) Create kubernetes generic secrets for mysql related values like myql root password, mysql user, mysql password, mysql host and mysql database. Set any values of your choice.
+5) Add some environment variables for both containers:
+a) MYSQL_ROOT_PASSWORD, MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD and MYSQL_HOST. Take their values from the secrets you created. 
+Please make sure to use env field (do not use envFrom) to define the name-value pair of environment variables.
+6) Create a node port type service lamp-service to expose the web application, nodePort must be 30008.
+7) Create a service for mysql named mysql-service and its port must be 3306.
+8) We already have /tmp/index.php file on jump_host server.
+a) Copy this file into httpd container under Apache document root i.e /app and replace the dummy values for mysql related variables with the environment variables you have set for mysql related parameters. 
+Please make sure you do not hard code the mysql related details in this file, you must use the environment variables to fetch those values.
+b) You must be able to access this index.php on node port 30008 at the end, please note that you should see Connected successfully message while accessing this page.
+
+
+##########################################################################################################
+---
+thor@jump_host ~$ vi php.ini 
+variables_order = "EGPCS"
+
+kubectl create configmap php-config --from-file=php.ini
+
+thor@jump_host ~$ kubectl describe cm php-config 
+Name:         php-config
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Data
+====
+php.ini:
+----
+variables_order = "EGPCS"
+
+BinaryData
+====
+Events:  <none>
+---
+
+
+##########################################################################################################
+---
+Create kubernetes generic secrets for mysql related values like myql root password, mysql user, mysql password, mysql host and mysql database. Set any values of your choice:
+MYSQL_ROOT_PASSWORD : rootAdmin
+MYSQL_DATABASE: database
+MYSQL_USER : admin
+MYSQL_PASSWORD : mysqlAdmin
+MYSQL_HOST : mysql-service
+NOTE:
+The MYSQL_HOST value in the context of a Kubernetes environment generally refers to the hostname or IP address of the MySQL database server.
+If you are working within a Kubernetes cluster, the value of MYSQL_HOST could be the service name of the MySQL service or the IP address of the MySQL server within the cluster.
+For example, if you have a MySQL service named mysql-service in the same Kubernetes namespace as your application, you can use mysql-service as the value for MYSQL_HOST.
+If you are using an external MySQL server, you should specify the external IP address or hostname of the server.
+For instance:
+For an internal service within the same namespace: MYSQL_HOST=mysql-service
+For an external database: MYSQL_HOST=external-mysql-host or MYSQL_HOST=xxx.xxx.xxx.xxx (replace with the actual IP address)
+Ensure that the value you use for MYSQL_HOST corresponds to the actual location or endpoint where the MySQL database is hosted.
+
+OPTIONAL:
+echo -n 'rootAdmin' | base64
+echo -n 'database' | base64
+echo -n 'admin' | base64
+echo -n 'mysqlAdmin' | base64
+echo -n 'databaseHost' | base64
+kubectl create secret generic mysecrets --from-literal=MYSQL_ROOT_PASSWORD=rootAdmin --from-literal=MYSQL_DATABASE=database --from-literal=MYSQL_USER=admin --from-literal=MYSQL_PASSWORD=mysqlAdmin --from-literal=MYSQL_HOST=mysql-service 
+
+
+thor@jump_host ~$ kubectl describe secrets mysecrets 
+Name:         mysecrets
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Type:  Opaque
+Data
+====
+MYSQL_DATABASE:       8 bytes
+MYSQL_HOST:           12 bytes
+MYSQL_PASSWORD:       10 bytes
+MYSQL_ROOT_PASSWORD:  9 bytes
+MYSQL_USER:           5 bytes
+
+thor@jump_host ~$ kubectl get secrets mysecrets -o yaml
+apiVersion: v1
+data:
+  MYSQL_DATABASE: ZGF0YWJhc2U=
+  MYSQL_HOST: bXlzcWwtc2VydmljZQ==
+  MYSQL_PASSWORD: bXlzcWxBZG1pbg==
+  MYSQL_ROOT_PASSWORD: cm9vdEFkbWlu
+  MYSQL_USER: YWRtaW4=
+kind: Secret
+metadata:
+  creationTimestamp: "2023-11-29T08:21:09Z"
+  name: mysecrets
+  namespace: default
+  resourceVersion: "5025"
+  uid: 8074b876-3445-46ce-b802-ee8e3cbba4d9
+type: Opaque
+
+##########################################################################################################
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lamp-wp
+  labels:
+    app: httpd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpd
+  template:
+    metadata:
+      labels:
+        app: httpd
+    spec:
+      containers:
+        - name: httpd-php-container
+          image: webdevops/php-apache:alpine-3-php7
+          ports:
+          - containerPort: 80
+          volumeMounts:
+          - mountPath: /opt/docker/etc/php/php.ini
+            subPath: php.ini
+            name: php-config-volume 
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_ROOT_PASSWORD
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_DATABASE
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_USER
+          - name: MYSQL_PASSWORD 
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_PASSWORD
+          - name: MYSQL_HOST
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_HOST                  
+        - name: mysql-container
+          image: mysql:5.6
+          ports:
+          - containerPort: 3306
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_ROOT_PASSWORD
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_DATABASE
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_USER
+          - name: MYSQL_PASSWORD 
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_PASSWORD
+          - name: MYSQL_HOST
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_HOST       
+      volumes:
+        - name: php-config-volume
+          configMap:
+            name: php-config
+thor@jump_host ~$ kubectl create -f d.yaml 
+##########################################################################################################
+---
+thor@jump_host ~$ kubectl expose deployment lamp-wp --name=lamp-service --type=NodePort --port=80 --target-port=80
+
+thor@jump_host ~$ kubectl get svc lamp-service 
+NAME           TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+lamp-service   NodePort   10.96.142.216   <none>        80:32073/TCP   13s
+edit 30008 as nodePort!!!
+thor@jump_host ~$ kubectl get svc lamp-service -o yaml
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-11-28T10:10:07Z"
+  labels:
+    app: httpd
+  name: lamp-service
+  namespace: default
+  resourceVersion: "3514"
+  uid: 078cb8ec-0ba8-4d49-8828-9285c432468c
+spec:
+  clusterIP: 10.96.142.216
+  clusterIPs:
+  - 10.96.142.216
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - nodePort: 30008
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: httpd
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+
+thor@jump_host ~$ kubectl describe svc lamp-service 
+Name:                     lamp-service
+Namespace:                default
+Labels:                   app=httpd
+Annotations:              <none>
+Selector:                 app=httpd
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.142.216
+IPs:                      10.96.142.216
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  30008/TCP
+Endpoints:                10.244.0.5:80,10.244.0.6:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+##########################################################################################################
+---
+thor@jump_host ~$ kubectl expose deployment lamp-wp --name=mysql-service --port=3306
+thor@jump_host ~$ kubectl get svc 
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        48m
+lamp-service    NodePort    10.96.142.216   <none>        80:30008/TCP   10m
+mysql-service   ClusterIP   10.96.81.233    <none>        3306/TCP       7s
+thor@jump_host ~$ kubectl describe svc mysql-service 
+Name:              mysql-service
+Namespace:         default
+Labels:            app=httpd
+Annotations:       <none>
+Selector:          app=httpd
+Type:              ClusterIP
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                10.96.81.233
+IPs:               10.96.81.233
+Port:              <unset>  3306/TCP
+TargetPort:        3306/TCP
+Endpoints:         10.244.0.5:3306,10.244.0.6:3306
+Session Affinity:  None
+Events:            <none>
+##########################################################################################################
+thor@jump_host /tmp$ cat index.php 
+<?php
+$dbname = 'dbname';
+$dbuser = 'dbuser';
+$dbpass = 'dbpass';
+$dbhost = 'dbhost';
+$connect = mysqli_connect($dbhost, $dbuser, $dbpass) or die("Unable to Connect to '$dbhost'");
+$test_query = "SHOW TABLES FROM $dbname";
+$result = mysqli_query($test_query);
+if ($result->connect_error) {
+   die("Connection failed: " . $conn->connect_error);
+}
+  echo "Connected successfully";
+
+
+thor@jump_host /tmp$ kubectl exec lamp-wp-7548b9fd8f-7zl5v -it -c httpd-php-container -- sh
+/ # cd /app
+/app # ls
+/app # 
+thor@jump_host /tmp$ kubectl cp index.php lamp-wp-7548b9fd8f-7zl5v:/app -c httpd-php-container
+
+thor@jump_host /tmp$ kubectl exec lamp-wp-7548b9fd8f-7zl5v -it -c httpd-php-container -- sh
+/ # cd /app
+/app # cat index.php 
+<?php
+$dbname = 'dbname';
+$dbuser = 'dbuser';
+$dbpass = 'dbpass';
+$dbhost = 'dbhost';
+$connect = mysqli_connect($dbhost, $dbuser, $dbpass) or die("Unable to Connect to '$dbhost'");
+$test_query = "SHOW TABLES FROM $dbname";
+$result = mysqli_query($test_query);
+if ($result->connect_error) {
+   die("Connection failed: " . $conn->connect_error);
+}
+  echo "Connected successfully";
+
+
+
+/app # printenv | grep MYSQL
+MYSQL_ROOT_PASSWORD=rootAdmin
+MYSQL_SERVICE_PORT_3306_TCP_ADDR=10.96.37.247
+MYSQL_PASSWORD=mysqlAdmin
+MYSQL_SERVICE_PORT_3306_TCP_PORT=3306
+MYSQL_SERVICE_PORT_3306_TCP_PROTO=tcp
+MYSQL_SERVICE_SERVICE_HOST=10.96.37.247
+MYSQL_HOST=mysql-service
+MYSQL_USER=admin
+MYSQL_SERVICE_SERVICE_PORT=3306
+MYSQL_SERVICE_PORT=tcp://10.96.37.247:3306
+MYSQL_SERVICE_PORT_3306_TCP=tcp://10.96.37.247:3306
+MYSQL_DATABASE=database
+
+
+
+---
+ON JS create CM to read from file;
+thor@jump_host ~$ vi index.php
+thor@jump_host ~$ cat index.php 
+<?php
+$dbname = $_ENV['MYSQL_DATABASE'];
+$dbuser = $_ENV['MYSQL_USER'];
+$dbpass = $_ENV['MYSQL_PASSWORD'];
+$dbhost = $_ENV['MYSQL_HOST'];
+$connect = mysqli_connect($dbhost, $dbuser, $dbpass) or die("Unable to Connect to '$dbhost'");
+$test_query = "SHOW TABLES FROM $dbname";
+$result = mysqli_query($test_query);
+if ($result->connect_error) {
+   die("Connection failed: " . $conn->connect_error);
+}
+  echo "Connected successfully";
+
+
+thor@jump_host ~$ kubectl create cm php-index-cm --from-file=index.php 
+thor@jump_host ~$ kubectl describe cm php-index-cm 
+Name:         php-index-cm
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Data
+====
+index.php:
+----
+<?php
+$dbname = $_ENV['MYSQL_DATABASE'];
+$dbuser = $_ENV['MYSQL_USER'];
+$dbpass = $_ENV['MYSQL_PASSWORD'];
+$dbhost = $_ENV['MYSQL_HOST'];
+$connect = mysqli_connect($dbhost, $dbuser, $dbpass) or die("Unable to Connect to '$dbhost'");
+$test_query = "SHOW TABLES FROM $dbname";
+$result = mysqli_query($test_query);
+if ($result->connect_error) {
+   die("Connection failed: " . $conn->connect_error);
+}
+  echo "Connected successfully";
+
+BinaryData
+====
+Events:  <none>
+---
+##################################################################################################################################
+CREATE NEW Deployment with volume cm added;
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lamp-wp
+  labels:
+    app: httpd
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: httpd
+  template:
+    metadata:
+      labels:
+        app: httpd
+    spec:
+      containers:
+        - name: httpd-php-container
+          image: webdevops/php-apache:alpine-3-php7
+          ports:
+          - containerPort: 80
+          volumeMounts:
+          - mountPath: /opt/docker/etc/php/php.ini
+            subPath: php.ini
+            name: php-config-volume 
+          - mountPath: /app/index.php
+            subPath: index.php
+            name: php-index-cm-volume
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_ROOT_PASSWORD
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_DATABASE
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_USER
+          - name: MYSQL_PASSWORD 
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_PASSWORD
+          - name: MYSQL_HOST
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_HOST                  
+        - name: mysql-container
+          image: mysql:5.6
+          ports:
+          - containerPort: 3306
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_ROOT_PASSWORD
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_DATABASE
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_USER
+          - name: MYSQL_PASSWORD 
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_PASSWORD
+          - name: MYSQL_HOST
+            valueFrom:
+              secretKeyRef:
+                name: mysecrets
+                key: MYSQL_HOST       
+      volumes:
+        - name: php-config-volume
+          configMap:
+            name: php-config
+        - name: php-index-cm-volume
+          configMap: 
+            name: php-index-cm
+        
+OR;
+edit deplyoment;
+ volumeMounts:
+        - mountPath: /opt/docker/etc/php/php.ini
+          name: php-config-volume
+          subPath: php.ini
+        - mountPath: /app/index.php
+          name: php-index-cm-volume
+          subPath: index.php
+.....
+terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: php-config
+        name: php-config-volume
+      - configMap:
+          defaultMode: 420
+          name: php-index-cm
+        name: php-index-cm-volume
+
+
+
+
+thor@jump_host ~$ kubectl describe deployments.apps lamp-wp 
+Name:                   lamp-wp
+Namespace:              default
+CreationTimestamp:      Wed, 29 Nov 2023 08:21:59 +0000
+Labels:                 app=httpd
+Annotations:            deployment.kubernetes.io/revision: 2
+Selector:               app=httpd
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=httpd
+  Containers:
+   httpd-php-container:
+    Image:      webdevops/php-apache:alpine-3-php7
+    Port:       80/TCP
+    Host Port:  0/TCP
+    Environment:
+      MYSQL_ROOT_PASSWORD:  <set to the key 'MYSQL_ROOT_PASSWORD' in secret 'mysecrets'>  Optional: false
+      MYSQL_DATABASE:       <set to the key 'MYSQL_DATABASE' in secret 'mysecrets'>       Optional: false
+      MYSQL_USER:           <set to the key 'MYSQL_USER' in secret 'mysecrets'>           Optional: false
+      MYSQL_PASSWORD:       <set to the key 'MYSQL_PASSWORD' in secret 'mysecrets'>       Optional: false
+      MYSQL_HOST:           <set to the key 'MYSQL_HOST' in secret 'mysecrets'>           Optional: false
+    Mounts:
+      /app/index.php from php-index-cm-volume (rw,path="index.php")
+      /opt/docker/etc/php/php.ini from php-config-volume (rw,path="php.ini")
+   mysql-container:
+    Image:      mysql:5.6
+    Port:       3306/TCP
+    Host Port:  0/TCP
+    Environment:
+      MYSQL_ROOT_PASSWORD:  <set to the key 'MYSQL_ROOT_PASSWORD' in secret 'mysecrets'>  Optional: false
+      MYSQL_DATABASE:       <set to the key 'MYSQL_DATABASE' in secret 'mysecrets'>       Optional: false
+      MYSQL_USER:           <set to the key 'MYSQL_USER' in secret 'mysecrets'>           Optional: false
+      MYSQL_PASSWORD:       <set to the key 'MYSQL_PASSWORD' in secret 'mysecrets'>       Optional: false
+      MYSQL_HOST:           <set to the key 'MYSQL_HOST' in secret 'mysecrets'>           Optional: false
+    Mounts:                 <none>
+  Volumes:
+   php-config-volume:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      php-config
+    Optional:  false
+   php-index-cm-volume:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      php-index-cm
+    Optional:  false
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Progressing    True    NewReplicaSetAvailable
+  Available      True    MinimumReplicasAvailable
+OldReplicaSets:  lamp-wp-7548b9fd8f (0/0 replicas created)
+NewReplicaSet:   lamp-wp-84995c75b8 (1/1 replicas created)
+Events:
+  Type    Reason             Age    From                   Message
+  ----    ------             ----   ----                   -------
+  Normal  ScalingReplicaSet  32m    deployment-controller  Scaled up replica set lamp-wp-7548b9fd8f to 1
+  Normal  ScalingReplicaSet  24m    deployment-controller  Scaled up replica set lamp-wp-84995c75b8 to 1
+  Normal  ScalingReplicaSet  24m    deployment-controller  Scaled down replica set lamp-wp-7548b9fd8f to 0 from 1
+  Normal  ScalingReplicaSet  11m    deployment-controller  Scaled down replica set lamp-wp-84995c75b8 to 0 from 1
+  Normal  ScalingReplicaSet  11m    deployment-controller  Scaled up replica set lamp-wp-84995c75b8 to 2 from 0
+  Normal  ScalingReplicaSet  4m25s  deployment-controller  Scaled down replica set lamp-wp-84995c75b8 to 0 from 2
+  Normal  ScalingReplicaSet  4m23s  deployment-controller  Scaled up replica set lamp-wp-84995c75b8 to 1 from 0
+
+
+
+
+thor@jump_host ~$ kubectl get deployments.apps -o yaml
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "2"
+    creationTimestamp: "2023-11-29T08:21:59Z"
+    generation: 6
+    labels:
+      app: httpd
+    name: lamp-wp
+    namespace: default
+    resourceVersion: "5100"
+    uid: fe77bf9d-5d3c-41b6-9f61-d608bd683444
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: httpd
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: httpd
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_ROOT_PASSWORD
+                name: mysecrets
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_DATABASE
+                name: mysecrets
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_USER
+                name: mysecrets
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_PASSWORD
+                name: mysecrets
+          - name: MYSQL_HOST
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_HOST
+                name: mysecrets
+          image: webdevops/php-apache:alpine-3-php7
+          imagePullPolicy: IfNotPresent
+          name: httpd-php-container
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /opt/docker/etc/php/php.ini
+            name: php-config-volume
+            subPath: php.ini
+          - mountPath: /app/index.php
+            name: php-index-cm-volume
+            subPath: index.php
+        - env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_ROOT_PASSWORD
+                name: mysecrets
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_DATABASE
+                name: mysecrets
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_USER
+                name: mysecrets
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_PASSWORD
+                name: mysecrets
+          - name: MYSQL_HOST
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_HOST
+                name: mysecrets
+          image: mysql:5.6
+          imagePullPolicy: IfNotPresent
+          name: mysql-container
+          ports:
+          - containerPort: 3306
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: php-config
+          name: php-config-volume
+        - configMap:
+            defaultMode: 420
+            name: php-index-cm
+          name: php-index-cm-volume
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2023-11-29T08:21:59Z"
+      lastUpdateTime: "2023-11-29T08:29:57Z"
+      message: ReplicaSet "lamp-wp-84995c75b8" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    - lastTransitionTime: "2023-11-29T08:49:47Z"
+      lastUpdateTime: "2023-11-29T08:49:47Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    observedGeneration: 6
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+kind: List
+metadata:
+  resourceVersion: ""
