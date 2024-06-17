@@ -1,0 +1,389 @@
+There is an iron gallery app that the Nautilus DevOps team was developing. They have recently customized the app and are going to deploy the same on the Kubernetes cluster. Below you can find more details:
+1.Create a namespace iron-namespace-nautilus
+
+2.Create a deployment iron-gallery-deployment-nautilus for iron gallery under the same namespace you created.
+:- Labels run should be iron-gallery.
+:- Replicas count should be 1.
+:- Selector's matchLabels run should be iron-gallery.
+:- Template labels run should be iron-gallery under metadata.
+:- The container should be named as iron-gallery-container-nautilus, use kodekloud/irongallery:2.0 image ( use exact image name / tag ).
+:- Resources limits for memory should be 100Mi and for CPU should be 50m.
+:- First volumeMount name should be config, its mountPath should be /usr/share/nginx/html/data.
+:- Second volumeMount name should be images, its mountPath should be /usr/share/nginx/html/uploads.
+:- First volume name should be config and give it emptyDir and second volume name should be images, also give it emptyDir.
+
+3.Create a deployment iron-db-deployment-nautilus for iron db under the same namespace.
+:- Labels db should be mariadb.
+:- Replicas count should be 1.
+:- Selector's matchLabels db should be mariadb.
+:- Template labels db should be mariadb under metadata.
+:- The container name should be iron-db-container-nautilus, use kodekloud/irondb:2.0 image ( use exact image name / tag ).
+:- Define environment, set MYSQL_DATABASE its value should be database_apache, set MYSQL_ROOT_PASSWORD and MYSQL_PASSWORD value should be with some complex passwords for DB connections, and MYSQL_USER value should be any custom user ( except root ).
+:- Volume mount name should be db and its mountPath should be /var/lib/mysql. Volume name should be db and give it an emptyDir.
+
+4.Create a service for iron db which should be named iron-db-service-nautilus under the same namespace. Configure spec as selector's db should be mariadb. Protocol should be TCP, port and targetPort should be 3306 and its type should be ClusterIP.
+
+5.Create a service for iron gallery which should be named iron-gallery-service-nautilus under the same namespace. Configure spec as selector's run should be iron-gallery. Protocol should be TCP, port and targetPort should be 80, nodePort should be 32678 and its type should be NodePort.
+
+
+
+thor@jump_host ~$ kubectl create ns iron-namespace-nautilus
+########deployment iron-gallery-deployment-nautilus 
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: iron-namespace-nautilus
+  name: iron-gallery-deployment-nautilus
+  labels:
+    run: iron-gallery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: iron-gallery
+  template:
+    metadata:
+      name: iron-gallery
+      labels:
+        run: iron-gallery
+    spec:
+      containers:
+        - name: iron-gallery-container-nautilus
+          image: kodekloud/irongallery:2.0
+          resources:
+            limits:
+              memory: "100Mi"
+              cpu: "50m"
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html/data
+              name: config
+            - mountPath: /usr/share/nginx/html/uploads
+              name: images
+      volumes:
+        - name: config
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: images
+          emptyDir:
+            sizeLimit: 500Mi
+  
+###deployment iron-db-deployment-nautilus
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: iron-namespace-nautilus
+  name: iron-db-deployment-nautilus
+  labels:
+    db: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      db: mariadb
+  template:
+    metadata:
+      name: mariadb
+      labels:
+        db: mariadb
+    spec:
+      containers:
+        - name: iron-db-container-nautilus
+          image: kodekloud/irondb:2.0
+          env:                        
+          - name: MYSQL_DATABASE
+            value: "database_apache"
+          - name: MYSQL_ROOT_PASSWORD
+            value: "R00t"
+          - name: MYSQL_PASSWORD
+            value: "MysqlPassword123@"
+          - name: MYSQL_USER 
+            value: admin
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: db
+      volumes:
+        - name: db
+          emptyDir:
+            sizeLimit: 500Mi 
+     
+  ---
+###iron-db-service-nautilus
+4.Create a service for iron db which should be named iron-db-service-nautilus under the same namespace. 
+Configure spec as selector's db should be mariadb. Protocol should be TCP, port and targetPort should be 3306 and its type should be ClusterIP.
+kubectl expose deployment iron-db-deployment-nautilus --name=iron-db-service-nautilus -n iron-namespace-nautilus --port=3306 
+edit!!!
+###ron-gallery-service-nautilus
+5.Create a service for iron gallery which should be named iron-gallery-service-nautilus under the same namespace. 
+Configure spec as selector's run should be iron-gallery. Protocol should be TCP, port and targetPort should be 80, nodePort should be 32678 and its type should be NodePort.
+kubectl expose deployment iron-db-deployment-nautilus --name=iron-gallery-service-nautilus -n iron-namespace-nautilus --port=80 --target-port=80 --type=NodePort
+edit port NodePort to 32678!!!
+edit nodeselector!!
+run: iron-gallery
+
+
+
+##########################
+thor@jump_host ~$ kubectl describe pods -n iron-namespace-nautilus 
+Name:             iron-db-deployment-nautilus-5f57c89bdc-w5fx8
+Namespace:        iron-namespace-nautilus
+Priority:         0
+Service Account:  default
+Node:             kodekloud-control-plane/172.17.0.2
+Start Time:       Mon, 04 Dec 2023 09:56:56 +0000
+Labels:           db=mariadb
+                  pod-template-hash=5f57c89bdc
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.6
+IPs:
+  IP:           10.244.0.6
+Controlled By:  ReplicaSet/iron-db-deployment-nautilus-5f57c89bdc
+Containers:
+  iron-db-container-nautilus:
+    Container ID:   containerd://f9fbf4052348122ba1b680897d132a852aae55935bf32588cbc5022e317078b9
+    Image:          kodekloud/irondb:2.0
+    Image ID:       docker.io/kodekloud/irondb@sha256:fa72f29b927307e2a678a2f5056ee5be1f50ae249dbdbd4e47e4abb88e0e5953
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Mon, 04 Dec 2023 09:57:20 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      MYSQL_DATABASE:       database_apache
+      MYSQL_ROOT_PASSWORD:  R00t
+      MYSQL_PASSWORD:       MysqlPassword123@
+      MYSQL_USER:           admin
+    Mounts:
+      /var/lib/mysql from db (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-g4g2d (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  db:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  500Mi
+  kube-api-access-g4g2d:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  3m10s  default-scheduler  Successfully assigned iron-namespace-nautilus/iron-db-deployment-nautilus-5f57c89bdc-w5fx8 to kodekloud-control-plane
+  Normal  Pulling    3m8s   kubelet            Pulling image "kodekloud/irondb:2.0"
+  Normal  Pulled     2m47s  kubelet            Successfully pulled image "kodekloud/irondb:2.0" in 13.852548379s (21.439140839s including waiting)
+  Normal  Created    2m47s  kubelet            Created container iron-db-container-nautilus
+  Normal  Started    2m46s  kubelet            Started container iron-db-container-nautilus
+
+Name:             iron-gallery-deployment-nautilus-74f4bc794-t97h7
+Namespace:        iron-namespace-nautilus
+Priority:         0
+Service Account:  default
+Node:             kodekloud-control-plane/172.17.0.2
+Start Time:       Mon, 04 Dec 2023 09:56:53 +0000
+Labels:           pod-template-hash=74f4bc794
+                  run=iron-gallery
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.5
+IPs:
+  IP:           10.244.0.5
+Controlled By:  ReplicaSet/iron-gallery-deployment-nautilus-74f4bc794
+Containers:
+  iron-gallery-container-nautilus:
+    Container ID:   containerd://81c512658ad25cdfe42497eff7a272b2f24d8d70afb5720afde99c8319bb4875
+    Image:          kodekloud/irongallery:2.0
+    Image ID:       docker.io/kodekloud/irongallery@sha256:677aded1f2397f8168bf7061646630e153a68187a6026587c881feb79436d468
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Mon, 04 Dec 2023 09:57:07 +0000
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     50m
+      memory:  100Mi
+    Requests:
+      cpu:        50m
+      memory:     100Mi
+    Environment:  <none>
+    Mounts:
+      /usr/share/nginx/html/data from config (rw)
+      /usr/share/nginx/html/uploads from images (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-7s9pw (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  config:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  500Mi
+  images:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  500Mi
+  kube-api-access-7s9pw:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Guaranteed
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  3m13s  default-scheduler  Successfully assigned iron-namespace-nautilus/iron-gallery-deployment-nautilus-74f4bc794-t97h7 to kodekloud-control-plane
+  Normal  Pulling    3m11s  kubelet            Pulling image "kodekloud/irongallery:2.0"
+  Normal  Pulled     3m1s   kubelet            Successfully pulled image "kodekloud/irongallery:2.0" in 9.982943666s (9.983045957s including waiting)
+  Normal  Created    3m     kubelet            Created container iron-gallery-container-nautilus
+  Normal  Started    2m59s  kubelet            Started container iron-gallery-container-nautilus
+
+
+
+
+thor@jump_host ~$ kubectl describe svc  -n iron-namespace-nautilus 
+Name:              iron-db-service-nautilus
+Namespace:         iron-namespace-nautilus
+Labels:            db=mariadb
+Annotations:       <none>
+Selector:          db=mariadb
+Type:              ClusterIP
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                10.96.150.214
+IPs:               10.96.150.214
+Port:              <unset>  3306/TCP
+TargetPort:        3306/TCP
+Endpoints:         10.244.0.6:3306
+Session Affinity:  None
+Events:            <none>
+
+Name:                     iron-gallery-service-nautilus
+Namespace:                iron-namespace-nautilus
+Labels:                   run=iron-gallery
+Annotations:              <none>
+Selector:                 run=iron-gallery
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.182.178
+IPs:                      10.96.182.178
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  32678/TCP
+Endpoints:                10.244.0.5:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+
+
+
+thor@jump_host ~$ kubectl describe deployments.apps  -n iron-namespace-nautilus 
+Name:                   iron-db-deployment-nautilus
+Namespace:              iron-namespace-nautilus
+CreationTimestamp:      Mon, 04 Dec 2023 09:56:56 +0000
+Labels:                 db=mariadb
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               db=mariadb
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  db=mariadb
+  Containers:
+   iron-db-container-nautilus:
+    Image:      kodekloud/irondb:2.0
+    Port:       <none>
+    Host Port:  <none>
+    Environment:
+      MYSQL_DATABASE:       database_apache
+      MYSQL_ROOT_PASSWORD:  R00t
+      MYSQL_PASSWORD:       MysqlPassword123@
+      MYSQL_USER:           admin
+    Mounts:
+      /var/lib/mysql from db (rw)
+  Volumes:
+   db:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  500Mi
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   iron-db-deployment-nautilus-5f57c89bdc (1/1 replicas created)
+Events:
+  Type    Reason             Age    From                   Message
+  ----    ------             ----   ----                   -------
+  Normal  ScalingReplicaSet  3m22s  deployment-controller  Scaled up replica set iron-db-deployment-nautilus-5f57c89bdc to 1
+
+Name:                   iron-gallery-deployment-nautilus
+Namespace:              iron-namespace-nautilus
+CreationTimestamp:      Mon, 04 Dec 2023 09:56:53 +0000
+Labels:                 run=iron-gallery
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               run=iron-gallery
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  run=iron-gallery
+  Containers:
+   iron-gallery-container-nautilus:
+    Image:      kodekloud/irongallery:2.0
+    Port:       <none>
+    Host Port:  <none>
+    Limits:
+      cpu:        50m
+      memory:     100Mi
+    Environment:  <none>
+    Mounts:
+      /usr/share/nginx/html/data from config (rw)
+      /usr/share/nginx/html/uploads from images (rw)
+  Volumes:
+   config:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  500Mi
+   images:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  500Mi
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   iron-gallery-deployment-nautilus-74f4bc794 (1/1 replicas created)
+Events:
+  Type    Reason             Age    From                   Message
+  ----    ------             ----   ----                   -------
+  Normal  ScalingReplicaSet  3m25s  deployment-controller  Scaled up replica set iron-gallery-deployment-nautilus-74f4bc794 to 1
+
+
