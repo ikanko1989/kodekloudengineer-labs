@@ -1,0 +1,227 @@
+The Nautilus application development team observed some performance issues with one of the application that is deployed in Kubernetes cluster. After looking into number of factors, the team has suggested to use some in-memory caching utility for DB service. After number of discussions, they have decided to use Redis. Initially they would like to deploy Redis on kubernetes cluster for testing and later they will move it to production. Please find below more details about the task:
+1.Create a redis deployment with following parameters:
+2.Create a config map called my-redis-config having maxmemory 2mb in redis-config.
+3.Name of the deployment should be redis-deployment, it should use
+redis:alpine image and container name should be redis-container. Also make sure it has only 1 replica.
+4.The container should request for 1 CPU.
+5.Mount 2 volumes:
+a. An Empty directory volume called data at path /redis-master-data.
+b. A configmap volume called redis-config at path /redis-master.
+c. The container should expose the port 6379.
+Finally, redis-deployment should be in an up and running state.
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      name: redis
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis-container
+          image: redis:alpine
+          ports:
+          - containerPort: 6379
+          resources:
+            requests:
+              cpu: "1"
+          volumeMounts:
+            - mountPath: /redis-master-data
+              name: data
+            - mountPath: /redis-master
+              name: redis-config
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: 500Mi 
+        - name: redis-config
+          configMap:
+            name: my-redis-config
+     
+---
+
+
+#######CONFIG MAP######
+2.Create a config map called my-redis-config having maxmemory 2mb in redis-config.
+
+thor@jump_host ~$ vi redis_config.txt
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-redis-config
+data:
+  redis-config: |
+    maxmemory 2mb
+kubectl create cm my-redis-config --from-file=redis_config.txt
+
+###############################
+thor@jump_host ~$ kubectl describe cm my-redis-config 
+Name:         my-redis-config
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+Data
+====
+redis_config.txt:
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-redis-config
+data:
+  redis-config: |
+    maxmemory 2mb
+
+BinaryData
+====
+Events:  <none>
+
+thor@jump_host ~$ kubectl get cm my-redis-config -o yaml
+apiVersion: v1
+data:
+  redis_config.txt: |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: my-redis-config
+    data:
+      redis-config: |
+        maxmemory 2mb
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2023-12-04T13:31:00Z"
+  name: my-redis-config
+  namespace: default
+  resourceVersion: "2794"
+  uid: 89f23669-edef-4beb-b103-b57f288f18ca
+
+
+ #######################
+ thor@jump_host ~$ kubectl describe deployments.apps 
+Name:                   redis-deployment
+Namespace:              default
+CreationTimestamp:      Mon, 04 Dec 2023 13:42:13 +0000
+Labels:                 app=redis
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=redis
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=redis
+  Containers:
+   redis-container:
+    Image:      redis:alpine
+    Port:       6379/TCP
+    Host Port:  0/TCP
+    Requests:
+      cpu:        1
+    Environment:  <none>
+    Mounts:
+      /redis-master from redis-config (rw)
+      /redis-master-data from data (rw)
+  Volumes:
+   data:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  500Mi
+   redis-config:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      my-redis-config
+    Optional:  false
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   redis-deployment-784d87f8fd (1/1 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  2m3s  deployment-controller  Scaled up replica set redis-deployment-784d87f8fd to 1
+
+
+
+
+
+
+thor@jump_host ~$ kubectl describe pods 
+Name:             redis-deployment-784d87f8fd-9wxkn
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             kodekloud-control-plane/172.17.0.2
+Start Time:       Mon, 04 Dec 2023 13:42:13 +0000
+Labels:           app=redis
+                  pod-template-hash=784d87f8fd
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.5
+IPs:
+  IP:           10.244.0.5
+Controlled By:  ReplicaSet/redis-deployment-784d87f8fd
+Containers:
+  redis-container:
+    Container ID:   containerd://544884fde2d1c94ad4c659009a802b028b4714e6249bd01bd5e05d00b1860fe3
+    Image:          redis:alpine
+    Image ID:       docker.io/library/redis@sha256:3ce533b2b057f74b235d1d8697ae08b1b6ff0a5e16827ea6a377b6365693c7ed
+    Port:           6379/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Mon, 04 Dec 2023 13:42:17 +0000
+    Ready:          True
+    Restart Count:  0
+    Requests:
+      cpu:        1
+    Environment:  <none>
+    Mounts:
+      /redis-master from redis-config (rw)
+      /redis-master-data from data (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-mkvl2 (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  data:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  500Mi
+  redis-config:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      my-redis-config
+    Optional:  false
+  kube-api-access-mkvl2:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  2m9s  default-scheduler  Successfully assigned default/redis-deployment-784d87f8fd-9wxkn to kodekloud-control-plane
+  Normal  Pulling    2m8s  kubelet            Pulling image "redis:alpine"
+  Normal  Pulled     2m5s  kubelet            Successfully pulled image "redis:alpine" in 3.339543244s (3.339562564s including waiting)
+  Normal  Created    2m5s  kubelet            Created container redis-container
+  Normal  Started    2m5s  kubelet            Started container redis-container
