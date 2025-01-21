@@ -1,6 +1,75 @@
 The DevOps team at xFusionCorp Industries is initiating the setup of CI/CD pipelines and has decided to utilize Jenkins as their server. Execute the task according to the provided requirements:
 1. Install jenkins on jenkins server using yum utility only, and start its service. You might face timeout issue while starting the Jenkins service, please refer this link for help.
-2. Jenkin's admin user name should be theadmin, password should be Adm!n321, full name should be James and email should be james@jenkins.stratos.xfusioncorp.com.
+2. Jenkin's admin user name should be theadmin, password should be Adm!n321, full name should be Siva and email should be siva@jenkins.stratos.xfusioncorp.com.
 Note:
 1. For this task, access the Jenkins server by SSH using the root user and password S3curePass from the jump host.
 2. After Jenkins server installation, click the Jenkins button on the top bar to access the Jenkins UI and follow on-screen instructions to create an admin user.
+
+##################################################################
+SOLUTION:
+##################################################################
+
+
+thor@jumphost ~$ ssh root@172.16.238.19
+root@172.16.238.19's password: 
+[root@jenkins ~]# 
+[root@jenkins ~]# 
+
+[root@jenkins ~]#sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+[root@jenkins ~]#sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+[root@jenkins ~]#sudo dnf upgrade
+
+# Add required dependencies for the jenkins package
+[root@jenkins ~]#sudo dnf install fontconfig java-17-openjdk
+
+[root@jenkins ~]#sudo dnf install jenkins
+
+[root@jenkins ~]#sudo systemctl daemon-reload
+
+[root@jenkins ~]# cat /etc/yum.repos.d/jenkins.repo 
+[jenkins]
+name=Jenkins-stable
+baseurl=http://pkg.jenkins.io/redhat-stable
+gpgcheck=1
+
+[root@jenkins ~]# sudo systemctl enable jenkins
+Created symlink /etc/systemd/system/multi-user.target.wants/jenkins.service → /usr/lib/systemd/system/jenkins.service.
+[root@jenkins ~]# sudo systemctl start jenkins
+[root@jenkins ~]# sudo systemctl status jenkins
+● jenkins.service - Jenkins Continuous Integration Server
+     Loaded: loaded (/usr/lib/systemd/system/jenkins.service;
+ enabled; preset: disabled)
+     Active: active (running) since Tue 2025-01-21 13:16:55 UTC; 9s ago
+   Main PID: 10626 (java)
+      Tasks: 84 (limit: 1340692)
+     Memory: 1013.1M
+     CGroup: /docker/ca9b62383077ccfb8f02ecfe483ec9da318e22a2d4bc6e4b8c0bee7ed31485aa/system.slice/jenkins.service
+             └─10626 /usr/bin/java -Djava.awt.headless=true -jar /usr/share/java/jenkins.war --webroot=/var/cache/jenkins/war --httpPort=8080
+Jan 21 13:16:55 jenkins.stratos.xfusioncorp.com systemd[1]: jenkins.service: Failed to remove 'trusted.delegate' x
+attr flag on control group /docker/ca9b62383077ccfb8f02ecfe483ec9da318e22a2d4bc6e4b8c0bee7ed31485aa/system.slice/jenkins.service, ignoring: Operation not permitted
+Jan 21 13:16:55 jenkins.stratos.xfusioncorp.com systemd[1]: jenkins.service: Got notification message from PID 106
+26 (READY=1)
+Jan 21 13:16:55 jenkins.stratos.xfusioncorp.com systemd[1]: jenkins.service: Changed start -> running
+Jan 21 13:16:55 jenkins.stratos.xfusioncorp.com systemd[1]: jenkins.service: Job 604 jenkins.service/start finishe
+d, result=done
+Jan 21 13:16:55 jenkins.stratos.xfusioncorp.com systemd[1]: Started Jenkins Continuous Integration Server.
+Jan 21 13:16:55 jenkins.stratos.xfusioncorp.com systemd[1]: jenkins.service: Failed to send unit change signal for
+ jenkins.service: Connection reset by peer
+Jan 21 13:16:57 jenkins.stratos.xfusioncorp.com systemd[1]: jenkins.service: Trying to enqueue job jenkins.service
+/start/replace
+Jan 21 13:16:57 jenkins.stratos.xfusioncorp.com systemd[1]: jenkins.service: Installed new job jenkins.service/sta
+rt as 735
+Jan 21 13:16:57 jenkins.stratos.xfusioncorp.com systemd[1]: jenkins.service: Enqueued job jenkins.service/start as
+ 735
+Jan 21 13:16:57 jenkins.stratos.xfusioncorp.com systemd[1]: jenkins.service: Job 735 jenkins.service/start finishe
+d, result=done
+[root@jenkins ~]# 
+
+[root@jenkins jenkins]# pwd
+/var/lib/jenkins
+[root@jenkins jenkins]# cat /var/lib/jenkins/secrets/initialAdminPassword
+a553b2a9ddb8490fb23acfe4080cd774
+
+In GUI set next steps
