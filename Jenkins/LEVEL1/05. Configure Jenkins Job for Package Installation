@@ -1,13 +1,16 @@
 Some new requirements have come up to install and configure some packages on the Nautilus infrastructure under Stratos Datacenter. The Nautilus DevOps team installed and configured a new Jenkins server so they wanted to create a Jenkins job to automate this task. Find below more details and complete the task accordingly:
+
 1. Access the Jenkins UI by clicking on the Jenkins button in the top bar. Log in using the credentials: username admin and password Adm!n321.
 2. Create a new Jenkins job named install-packages and configure it with the following specifications:
 Add a string parameter named PACKAGE.
 Configure the job to install a package specified in the $PACKAGE parameter on the storage server within the Stratos Datacenter.
 
 Note:
+
 1. Ensure to install any required plugins and restart the Jenkins service if necessary. Opt for Restart Jenkins when installation is complete and no jobs are running on the plugin installation/update page. Refresh the UI page if needed after restarting the service.
 2. Verify that the Jenkins job runs successfully on repeated executions to ensure reliability.
 3. Capture screenshots of your configuration for documentation and review purposes. Alternatively, use screen recording software like loom.com for comprehensive documentation and sharing.
+
 
 
 ############################
@@ -15,53 +18,35 @@ SOLUTION
 ############################
 
 
-1)LOGIN TO JENKINS SERVER:
-thor@jumphost ~$ ssh jenkins@jenkins
 
-jenkins@jenkins:~/.ssh$  ssh-keygen -t rsa -b 2048 
+1)Go to Manage Jenkins/Plugins/Available plugins/ and install "SSH,SSH Credentials,SSH Build Agents"  plugin with selected option "Restart Jenkins when installation is complete and no jobs are running"
 
-jenkins@jenkins:~/.ssh$ ssh-copy-id natasha@ststor01
-/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/var/lib/jenkins/.ssh/id_rsa.pub"
-/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
-/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-natasha@ststor01's password: 
+2)Go to Manage Jenkins/Credentials/Domains(Global)/+Add Credentials(UN:natasha,Pass:Bl@kW,ID:Storage Server)
 
-Number of key(s) added: 1
-Now try logging into the machine, with:   "ssh 'natasha@ststor01'"
-and check to make sure that only the key(s) you wanted were added.
-jenkins@jenkins:~/.ssh$ ssh natasha@ststor01
-Last failed login: Thu Jan 23 08:15:45 UTC 2025 from 172.16.238.19 on ssh:notty
-There was 1 failed login attempt since the last successful login.
-Last login: Thu Jan 23 08:03:56 2025 from 172.16.238.3
-[natasha@ststor01 ~]$ 
+3)Go to Manage Jenkins/System/SSH remote hosts-SSH sites-Hostname:ststor01,Port:22,Credentials:natsaha(Storage Server)
 
 
-TO AVOID SUDO PASS ADD IT TO /etc/sudoers:
-[natasha@ststor01 ~]$ sudo cat /etc/sudoers
-...
-natasha ALL=(ALL) NOPASSWD: ALL
-
-
-
-2)CREATE AND SET JENKINS JOB:
+4)CREATE AND SET JENKINS JOB:
 Clicking New Item from the Jenkins dashboard,select "Freestyle job", and then giving the item a name "install-packages" 
 This project is parameterized
 String Parameter
 Name
 PACKAGE
-Default Value
 
+Build Environment
+Execute shell script on remote host using ssh
+SSH site
+natasha@ststor01:22
 
 Build Steps
-Execute shell
+Execute shell script on remote host using ssh
+SSH site
+natasha@ststor01:22
 Command
-See the list of available environment variables
-STORAGE_SERVER="ststor01"
-SSH_USER="natasha"
-ssh $SSH_USER@$STORAGE_SERVER "sudo dnf install -y $PACKAGE"
+echo'Bl@kW'| sudo -S yum install -y $PACKAGE
 
 
-3)BUILD JOB WITH SOME PACKAGE:
+5)BUILD JOB WITH SOME PACKAGE:
 CLICK ON install-packages job:
 Project install-packages
 This build requires parameters:
@@ -70,16 +55,23 @@ nginx
 
 
 
-4)CONSOLE OUTPUT JENKINS:
+6)CONSOLE LOG:
 Started by user admin
 Running as SYSTEM
 Building in workspace /var/lib/jenkins/workspace/install-packages
-[install-packages] $ /bin/sh -xe /tmp/jenkins1657646421733842527.sh
-+ STORAGE_SERVER=ststor01
-+ SSH_USER=natasha
-+ ssh natasha@ststor01 sudo dnf install -y nginx
-Waiting for process with pid 3538 to finish.
-Last metadata expiration check: 0:00:02 ago on Thu Jan 23 08:23:17 2025.
+[SSH] executing pre build script:
+[SSH] script:
+PACKAGE="nginx"
+echo 'Bl@kW' | sudo -S yum install -y $PACKAGE
+[SSH] executing...
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+
+[sudo] password for natasha: Waiting for process with pid 2690 to finish.
+Last metadata expiration check: 0:00:02 ago on Thu Jan 23 13:09:02 2025.
 Dependencies resolved.
 ================================================================================
  Package                 Arch        Version               Repository      Size
@@ -100,14 +92,15 @@ Install  5 Packages
 Total download size: 2.2 M
 Installed size: 4.5 M
 Downloading Packages:
-Waiting for process with pid 3538 to finish.
-(1/5): logrotate-3.18.0-9.el9.x86_64.rpm        817 kB/s |  75 kB     00:00    
-(2/5): nginx-1.20.1-20.el9.x86_64.rpm           322 kB/s |  36 kB     00:00    
-(3/5): nginx-filesystem-1.20.1-20.el9.noarch.rp 237 kB/s | 9.2 kB     00:00    
-(4/5): centos-logos-httpd-90.8-1.el9.noarch.rpm 4.4 MB/s | 1.5 MB     00:00    
-(5/5): nginx-core-1.20.1-20.el9.x86_64.rpm      1.9 MB/s | 570 kB     00:00    
+(1/5): nginx-1.20.1-20.el9.x86_64.rpm           332 kB/s |  36 kB     00:00    
+[MIRROR] logrotate-3.18.0-9.el9.x86_64.rpm: Status code: 404 for http://mirror.team-cymru.com/centos-stream/9-stream/BaseOS/x86_64/os/Packages/logrotate-3.18.0-9.el9.x86_64.rpm (IP: 216.31.2.234)
+(2/5): nginx-core-1.20.1-20.el9.x86_64.rpm      3.4 MB/s | 570 kB     00:00    
+(3/5): centos-logos-httpd-90.8-1.el9.noarch.rpm 5.1 MB/s | 1.5 MB     00:00    
+(4/5): nginx-filesystem-1.20.1-20.el9.noarch.rp 289 kB/s | 9.2 kB     00:00    
+[MIRROR] logrotate-3.18.0-9.el9.x86_64.rpm: Status code: 404 for https://mirror.team-cymru.com/centos-stream/9-stream/BaseOS/x86_64/os/Packages/logrotate-3.18.0-9.el9.x86_64.rpm (IP: 216.31.2.234)
+(5/5): logrotate-3.18.0-9.el9.x86_64.rpm        210 kB/s |  75 kB     00:00    
 --------------------------------------------------------------------------------
-Total                                           3.7 MB/s | 2.2 MB     00:00     
+Total                                           3.2 MB/s | 2.2 MB     00:00     
 Running transaction check
 Transaction check succeeded.
 Running transaction test
@@ -130,15 +123,43 @@ Created symlink /etc/systemd/system/timers.target.wants/logrotate.timer ���
   Verifying        : nginx-2:1.20.1-20.el9.x86_64                           3/5 
   Verifying        : nginx-core-2:1.20.1-20.el9.x86_64                      4/5 
   Verifying        : nginx-filesystem-2:1.20.1-20.el9.noarch                5/5 
-
 Installed:
   centos-logos-httpd-90.8-1.el9.noarch      logrotate-3.18.0-9.el9.x86_64      
   nginx-2:1.20.1-20.el9.x86_64              nginx-core-2:1.20.1-20.el9.x86_64  
   nginx-filesystem-2:1.20.1-20.el9.noarch  
-
 Complete!
+[SSH] completed
+[SSH] exit-status: 0
+[SSH] executing post build script:
 Finished: SUCCESS
 
-5)CHECK VERSION ON STORAGE_SERVER:
-[natasha@ststor01 ~]$  nginx -version
-nginx version: nginx/1.20.1
+
+
+
+
+7)CHECK ON SERVER:
+thor@jumphost ~$ ssh natasha@ststor01
+natasha@ststor01 ~]$ systemctl status nginx
+○ nginx.service - The nginx HTTP and reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; preset: disabled)
+     Active: inactive (dead)
+
+Jan 23 12:27:21 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Failed to load configuration: No such file or directory
+Jan 23 12:27:22 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Collecting.
+Jan 23 12:41:04 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Failed to load configuration: No such file or directory
+Jan 23 12:41:04 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Collecting.
+Jan 23 13:09:37 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Collecting.
+Jan 23 13:09:40 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Collecting.
+[natasha@ststor01 ~]$ systemctl status nginx
+○ nginx.service - The nginx HTTP and reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; preset: disabled)
+     Active: inactive (dead)
+
+Jan 23 12:27:21 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Failed to load configuration: No such file or directory
+Jan 23 12:27:22 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Collecting.
+Jan 23 12:41:04 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Failed to load configuration: No such file or directory
+Jan 23 12:41:04 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Collecting.
+Jan 23 13:09:37 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Collecting.
+Jan 23 13:09:40 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Collecting.
+Jan 23 13:09:41 ststor01.stratos.xfusioncorp.com systemd[1]: nginx.service: Collecting.
+[natasha@ststor01 ~]$ 
