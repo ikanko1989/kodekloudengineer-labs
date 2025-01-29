@@ -1,1 +1,109 @@
+Some developers are working on a common repository where they are testing some features for an application. They are having three branches (excluding the master branch) 
+in this repository where they are adding changes related to these different features. They want to test these changes on Stratos DC app servers so they need a Jenkins job using which they can deploy these 
+different branches as per requirements. Configure a Jenkins job accordingly.
 
+Click on the Jenkins button on the top bar to access the Jenkins UI. Login using username admin and password Adm!n321.
+Similarly, click on Gitea button to access the Gitea page. Login to Gitea server using username sarah and password Sarah_pass123.
+
+
+1.There is a Git repository named web_app on Gitea where developers are pushing their changes. It has three branches version1, version2 and version3 (excluding the master branch). 
+You need not to make any changes in the repository.
+
+2.Create a Jenkins job named app-job.
+
+3.Configure this job to have a choice parameter named Branch with choices as given below:
+version1
+version2
+version3
+
+4.Configure the job to fetch changes from above mentioned Git repository and make sure it should fetches the changes from the respective branch which 
+you are passing as a choice in the choice parameter while building the job. For example if you choose version1 then it must fetch and deploy the changes from branch version1.
+
+5.Configure this job to use custom workspace rather than a default workspace and custom workspace directory should be created under /var/lib/jenkins (for example /var/lib/jenkins/version1) 
+location rather than under any sub-directory etc. The job should use a workspace as per the value you will pass for Branch parameter while building the job. For example if you choose version1 while building the 
+job then it should create a workspace directory called version1 and should fetch Git repository etc within that directory only.
+
+6.Configure the job to deploy code (fetched from Git repository) on storage server (in Stratos DC) under /var/www/html directory. Since its a shared volume.
+
+7.You can access the website by clicking on App button.
+
+
+
+
+############################
+SOLUTION
+############################
+
+0)Login to jenkins server and do: 
+ssh-keygen -t rsa and cat .ssh/id_rsa.pub
+jenkins@jenkins:~$ cat .ssh/id_rsa.pub 
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2k61KUKuheO55ggwtSI7UNQdJ9/v1/DhUObtzEvQldbjiG9xgqKMlCkvglYXRxjaL2WiiovJ1wu5z+w9L0VIb9JibtlU4U9xnjerTZlq+dBCMRkU81bMihnG8TBKTDInYi/
+KElUYbi1MvtPuH0AJN1YJ3b9THLks7zJDMCHke042seGOSOxkuBgmiN9h+2QfIWUzggJ7JJxq7cfyasXCnrJD7Z3dm9cst/3ADIjLv6GXqZtAdAsF+WAU030KKe8NIbAfqOW/
+LqBhS+OVLbz3ZZOxSzb9DCzwwzNwhZFemoADnvN496bE1MZY+fcLzNiSZTgiR8MZYNuNUEcsfgKtmebAR7qZq/2PtMp6K8iJq7MpUrUFeUjX4uEHp/awZ7tt7H0leiPzxyRcolIxWWjF4qTCeusPj9pQC51seBHrdyEHZ+
+iXNKwSD+emAt2ADG2SWNCTDzcWqXlS8YaFa3ZAaGr2Wr2QJbO6sIHXLzmsw71cKuGh03PaNpgCeFFr4hck= jenkins@jenkins.stratos.xfusioncorp.com
+
+Login to storage server: ssh natasha@ststor01 and add generated key to .ssh/authorized_keys
+[natasha@ststor01 .ssh]$ cat authorized_keys 
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2k61KUKuheO55ggwtSI7UNQdJ9/v1/DhUObtzEvQldbjiG9xgqKMlCkvglYXRxjaL2WiiovJ1wu5z+w9L0VIb9Jib
+tlU4U9xnjerTZlq+dBCMRkU81bMihnG8TBKTDInYi/KElUYbi1MvtPuH0AJN1YJ3b9THLks7zJDMCHke042seGOSOxkuBgmiN9h+2QfIWUzggJ7JJxq7cfyasXCnrJD7Z3dm9cst/
+3ADIjLv6GXqZtAdAsF+WAU030KKe8NIbAfqOW/LqBhS+OVLbz3ZZOxSzb9DCzwwzNwhZFemoADnvN496bE1MZY+fcLzNiSZTgiR8MZYNuNUEcsfgKtmebAR7qZq/2PtMp6K8iJq7MpUrUFeUjX4uEHp/awZ7tt7H0leiPzxyRcolIxWWjF4qTCeusPj9pQC51seBHrdyEHZ
++iXNKwSD+emAt2ADG2SWNCTDzcWqXlS8YaFa3ZAaGr2Wr2QJbO6sIHXLzmsw71cKuGh03PaNpgCeFFr4hck= jenkins@jenkins.stratos.xfusioncorp.com
+  
+Now should be able to login from jenkins to storage server without pass (jenkins@jenkins:~$ ssh natasha@ststor01):
+jenkins@jenkins:~$ ssh natasha@ststor01
+Last login: Wed Jan 29 14:55:54 2025 from 172.16.238.3
+[natasha@ststor01 ~]$ 
+
+
+1)Go to Manage Jenkins/Plugins/Available plugins/ and install "Git" and "SSH,SSH Credentials,SSH Build Agents "plugins with selected option "Restart Jenkins when installation is complete and no jobs are running"
+
+2)Clicking New Item from the Jenkins dashboard,select "Freestyle Job", and then giving the item a name "app-job"
+
+
+3)Click on created "app-job" job and "This project is parameterized/Add Parameter/Choice Parameter/Name:Branch and Choices:version1,version2, version3"
+Source Code Management/Git/Repository URL:http://git.stratos.xfusioncorp.com/sarah/web_app.git
+Branches to build/Branch Specifier/*/$Branch
+Execute concurrent builds if necessary/Advanced/Use custom workspace/Directory:/var/lib/jenkins/$Branch
+Add build step/Execute shell and add Command "scp -r * natasha@ststor01:/var/www/html" and Save"  
+
+
+
+[natasha@ststor01 html]$ pwd
+/var/www/html
+[natasha@ststor01 html]$ 
+[natasha@ststor01 html]$ 
+[natasha@ststor01 html]$ cat index.html 
+This is app version 3[natasha@ststor01 html]$ 
+
+4)Click on created "app-job" job and Build with Parameters/Branch/version1 and Build
+Started by user admin
+Running as SYSTEM
+Building in workspace /var/lib/jenkins/version1
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/version1/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url http://git.stratos.xfusioncorp.com/sarah/web_app.git # timeout=10
+Fetching upstream changes from http://git.stratos.xfusioncorp.com/sarah/web_app.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.25.1'
+ > git fetch --tags --force --progress -- http://git.stratos.xfusioncorp.com/sarah/web_app.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/version1^{commit} # timeout=10
+Checking out Revision 5f8aef4e7c483e364e228d5270768e9aa7fd3ba5 (refs/remotes/origin/version1)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 5f8aef4e7c483e364e228d5270768e9aa7fd3ba5 # timeout=10
+Commit message: "Added index.html file to branch version1"
+ > git rev-list --no-walk 5f8aef4e7c483e364e228d5270768e9aa7fd3ba5 # timeout=10
+[version1] $ /bin/sh -xe /tmp/jenkins4195441616832139357.sh
++ scp -r index.html natasha@ststor01:/var/www/html
+Finished: SUCCESS
+
+After job applied;
+[natasha@ststor01 html]$ pwd
+/var/www/html 
+[natasha@ststor01 html]$ cat index.html 
+This is app version 1
+jenkins@jenkins:~/version1$ pwd
+/var/lib/jenkins/version1
+jenkins@jenkins:~/version1$ cat index.html 
+This is app version 1
