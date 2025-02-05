@@ -1,1 +1,68 @@
+The Nautilus DevOps team has installed and configured new Jenkins server in Stratos DC which they will use for CI/CD and for some automation tasks. 
+There is a requirement to add all app servers as slave nodes in Jenkins so that they can perform tasks on these servers using Jenkins. 
+Find below more details and accomplish the task accordingly.
 
+
+
+Click on the Jenkins button on the top bar to access the Jenkins UI. Login using username admin and password Adm!n321.
+1. Add all app servers as SSH build agent/slave nodes in Jenkins. Slave node name for app server 1, app server 2 and app server 3 must be App_server_1, App_server_2, App_server_3 respectively.
+
+2. Add labels as below:
+App_server_1 : stapp01
+App_server_2 : stapp02
+App_server_3 : stapp03
+
+3. Remote root directory for App_server_1 must be /home/tony/jenkins, for App_server_2 must be /home/steve/jenkins and for App_server_3 must be /home/banner/jenkins.
+
+4. Make sure slave nodes are online and working properly.
+
+Note:
+1. You might need to install some plugins and restart Jenkins service. So, we recommend clicking on Restart Jenkins when installation is complete and no jobs are running on plugin installation/update page i.e update centre. 
+Also, Jenkins UI sometimes gets stuck when Jenkins service restarts in the back end. In this case, please make sure to refresh the UI page.
+
+
+
+############################
+SOLUTION
+############################
+
+1)Go to Manage Jenkins/Plugins/Available plugins/ and install "Git" and "SSH,SSH Credentials,SSH Build Agents "plugins with selected option "Restart Jenkins when installation is complete and no jobs are running"
+
+2)Go to Manage Jenkins/Credentials/Domains(Global)/+Add Credentials(UN:steve,Pass:Am3ric@,ID:APP2server)
+  Go to Manage Jenkins/Credentials/Domains(Global)/+Add Credentials(UN:tony, Pass:stapp01,ID:APP1server)
+  Go to Manage Jenkins/Credentials/Domains(Global)/+Add Credentials(UN:banner,Pass:stapp03,ID:APP3server)
+  
+3)Go to Manage Jenkins/Nodes/+New Node/Node name:App_server_1,type:"Permanent Agent",Labels:"App_server_1 :stapp01",Remote root directory:/home/tony/jenkins/Launch method:launch agent via ssh,Host:stapp01,Credentials:tony/Host Key Verification Strategy:Non verifiying Verification Strategy
+  Go to Manage Jenkins/Nodes/+New Node/Node name:App_server_2,type:"Permanent Agent",Labels:"App_server_2 :stapp02",Remote root directory:/home/steve/jenkins/Launch method:launch agent via ssh,Host:stapp02,Credentials:steve/Host Key Verification Strategy:Non verifiying Verification Strategy
+  Go to Manage Jenkins/Nodes/+New Node/Node name:App_server_3,type:"Permanent Agent",Labels:"App_server_3 :stapp03",Remote root directory:/home/banner/jenkins/Launch method:launch agent via ssh,Host:stapp03,Credentials:banner/Host Key Verification Strategy:Non verifiying Verification Strategy
+
+
+4)Install java on all servers:
+thor@jumphost ~$ ssh tony@stapp01
+The authenticity of host 'stapp01 (172.16.238.10)' can't be established.
+ED25519 key fingerprint is SHA256:PdCqg/CRf+ZlsaU8oWll09Y3midHI08IjvCdPx93fro.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'stapp01' (ED25519) to the list of known hosts.
+tony@stapp01's password: 
+[tony@stapp01 ~]$ sudo yum install java-11-openjdk-devel.x86_64 -y
+[tony@stapp01 ~]$ java --version
+openjdk 11.0.20.1 2023-08-24 LTS
+OpenJDK Runtime Environment (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS)
+OpenJDK 64-Bit Server VM (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS, mixed mode, sharing)
+
+[steve@stapp02 ~]$ sudo yum install java-11-openjdk-devel.x86_64 -y
+[steve@stapp02 ~]$ java --version
+openjdk 11.0.20.1 2023-08-24 LTS
+OpenJDK Runtime Environment (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS)
+OpenJDK 64-Bit Server VM (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS, mixed mode, sharing)
+[steve@stapp02 ~]$ 
+
+[banner@stapp03 ~]$ sudo yum install java-11-openjdk-devel.x86_64 -y
+[banner@stapp03 ~]$ java --version
+openjdk 11.0.20.1 2023-08-24 LTS
+OpenJDK Runtime Environment (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS)
+OpenJDK 64-Bit Server VM (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS, mixed mode, sharing)
+[banner@stapp03 ~]$ 
+
+5)Got to Nodes/check status of all servers
