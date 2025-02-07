@@ -1,1 +1,172 @@
+One of the DevOps engineers was working on to create a Dockerfile for Nginx. We need to build an image using that Dockerfile. 
+The deployment must be done using a Jenkins pipeline. Below you can find more details about the same.
+
+Click on the Jenkins button on the top bar to access the Jenkins UI. Login using username admin and password Adm!n321.
+Similarly, click on the Gitea button on the top bar to access the Gitea UI. Login using username sarah and password Sarah_pass123. There is a repository named sarah/web in Gitea.
+
+
+Create/configure a Jenkins pipeline job named nginx-container, configure it to run on server App Server 1.
+The pipeline can have just one stage named Build. (name is case sensitive)
+In the Build stage, build an image named stregi01.stratos.xfusioncorp.com:5000/nginx:latest using the Dockerfile present under the Git repository. stregi01.stratos.xfusioncorp.com:5000 is the image registry server. 
+After building the image push the same to the image registry server.
+
+
+############################
+SOLUTION
+############################
+
+http://git.stratos.xfusioncorp.com/sarah/web.git
+
+
+
+0) Install java on server1
+thor@jumphost ~$ ssh tony@stapp01
+The authenticity of host 'stapp01 (172.16.238.10)' can't be established.
+ED25519 key fingerprint is SHA256:e148/JoTfIyfi9VNnzkqi9pJanaeN6faxRhkzN80Igw.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'stapp01' (ED25519) to the list of known hosts.
+tony@stapp01's password: 
+[tony@stapp01 ~]$ 
+[tony@stapp01 ~]$ cd /var/www/html/
+[tony@stapp01 html]$ ls
+[tony@stapp01 ~]$ sudo yum install java-11-openjdk -y
+[tony@stapp01 ~]$ java --version
+openjdk 11.0.20.1 2023-08-24 LTS
+OpenJDK Runtime Environment (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS)
+OpenJDK 64-Bit Server VM (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS, mixed mode, sharing)
+[tony@stapp01 ~]$ 
+
+
+
+1)Go to Manage Jenkins/Plugins/Available plugins/and install:
+SSH,SSH Credentials,,SSH Build Agents, Pipeline, Pipeline: Step API, Pipeline API, Pipeline: SCM Step, Pipeline: Supporting APIs, Pipeline Job, Pipeline: Nodes and Processes, 
+Pipeline: Basic Steps, Pipeline: Stage Step, Pipeline: Declarative Extensions Points API, Pipeline Declarative, Docker Pipeline, Git
+"plugins with selected option "Restart Jenkins when installation is complete and no jobs are running"
+
+2)Go to Manage Jenkins/Credentials/Domains(Global)/+Add Credentials(UN:tony,Pass:Ir0nM@n,ID:stapp01)
+  Go to Manage Jenkins/Credentials/Domains(Global)/+Add Credentials(UN:sarah,Pass:Sarah_pass123,ID:sarah)
+
+
+3)Go to Manage Jenkins/Nodes/+New Node/Node name:stapp01,type:"Permanent Agent",Labels:"stapp01",Remote root directory:/home/tony/Launch method:launch agent via ssh,Host:stapp01,Credentials:tony/Host Key Verification Strategy:Non verifiying Verification Strategy
+
+
+4)Clicking New Item from the Jenkins dashboard,select "Pipeline", and then giving the item a name "nginx-container"
+Pipeline:
+pipeline {
+    agent {
+        label 'stapp01'
+    }
+    stages {
+        stage('Build') {
+            steps {
+                git credentialsId: 'sarah', url: 'http://git.stratos.xfusioncorp.com/sarah/web.git'
+                
+                sh 'docker build -t stregi01.stratos.xfusioncorp.com:5000/nginx:latest .'
+                
+                sh 'docker push stregi01.stratos.xfusioncorp.com:5000/nginx:latest'
+            }
+        }
+    }
+}
+
+
+5) Start Job:Dashboard/nginx-container/Build Now
+Console Output:
+Started by user admin
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on stapp01 in /home/tony/workspace/nginx-container
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Build)
+[Pipeline] git
+The recommended git tool is: NONE
+using credential sarah
+Fetching changes from the remote Git repository
+Checking out Revision 0c8b1031bd2260d7df03a6030425df25db59ecd3 (refs/remotes/origin/master)
+Commit message: "Added dockerfile"
+ > git rev-parse --resolve-git-dir /home/tony/workspace/nginx-container/.git # timeout=10
+ > git config remote.origin.url http://git.stratos.xfusioncorp.com/sarah/web.git # timeout=10
+Fetching upstream changes from http://git.stratos.xfusioncorp.com/sarah/web.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.5'
+using GIT_ASKPASS to set credentials 
+ > git fetch --tags --force --progress -- http://git.stratos.xfusioncorp.com/sarah/web.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 0c8b1031bd2260d7df03a6030425df25db59ecd3 # timeout=10
+ > git branch -a -v --no-abbrev # timeout=10
+ > git branch -D master # timeout=10
+ > git checkout -b master 0c8b1031bd2260d7df03a6030425df25db59ecd3 # timeout=10
+ > git rev-list --no-walk 0c8b1031bd2260d7df03a6030425df25db59ecd3 # timeout=10
+[Pipeline] sh
++ docker build -t stregi01.stratos.xfusioncorp.com:5000/nginx:latest .
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 109B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/nginx:stable-alpine3.17-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 57B done
+#4 DONE 0.0s
+
+#5 [1/2] FROM docker.io/library/nginx:stable-alpine3.17-slim
+#5 DONE 0.1s
+
+#6 [2/2] COPY index.html /usr/share/nginx/html/
+#6 DONE 0.1s
+
+#7 exporting to image
+#7 exporting layers
+#7 exporting layers 0.4s done
+#7 writing image sha256:cf5c89107e246d3f7fc8470e1fd4b1de5584a6bff9abb75e5ec3cf19471a2890 done
+#7 naming to stregi01.stratos.xfusioncorp.com:5000/nginx:latest done
+#7 DONE 0.4s
+[Pipeline] sh
++ docker push stregi01.stratos.xfusioncorp.com:5000/nginx:latest
+The push refers to repository [stregi01.stratos.xfusioncorp.com:5000/nginx]
+194ea2cab667: Preparing
+66afb7c3e6d1: Preparing
+439be94dd989: Preparing
+08761a690f84: Preparing
+419b89bbfa3b: Preparing
+5fa2288e0d6e: Preparing
+f4111324080c: Preparing
+5fa2288e0d6e: Waiting
+f4111324080c: Waiting
+439be94dd989: Pushed
+08761a690f84: Pushed
+66afb7c3e6d1: Pushed
+194ea2cab667: Pushed
+419b89bbfa3b: Pushed
+5fa2288e0d6e: Pushed
+f4111324080c: Pushed
+latest: digest: sha256:ca9c7daafc28d77d7d65e1cc03e30453b4c270f73ab3e386e978ff54930ad1e1 size: 1775
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
+
+
+6) Check on server1:
+tony@stapp01 nginx-container]$ docker images
+REPOSITORY                                    TAG                      IMAGE ID       CREATED              SIZE
+stregi01.stratos.xfusioncorp.com:5000/nginx   latest                   cf5c89107e24   About a minute ago   11.5MB
+nginx                                         stable-alpine3.17-slim   ee5112eafd25   22 months ago        11.5MB
+
+tony@stapp01 nginx-container]$ ls
+Dockerfile  index.html
+
+
 
