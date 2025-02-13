@@ -1,1 +1,195 @@
+The Nautilus development team had a meeting with the DevOps team where they discussed automating the deployment of one of their apps using Jenkins (the one in Stratos Datacenter). 
+They want to auto deploy the new changes in case any developer pushes to the repository. As per the requirements mentioned below configure the required Jenkins job.
+Click on the Jenkins button on the top bar to access the Jenkins UI. Login using username admin and Adm!n321 password.
+Similarly, you can access the Gitea UI using Gitea button, username and password for Git is sarah and Sarah_pass123 respectively. 
+Under user sarah you will find a repository named web that is already cloned on the Storage server under sarah's home. sarah is a developer who is working on this repository.
+
+
+1. Install httpd (whatever version is available in the yum repo by default) and configure it to serve on port 8080 on All app servers. 
+You can make it part of your Jenkins job or you can do this step manually on all app servers.
+
+
+2. Create a Jenkins job named nautilus-app-deployment and configure it in a way so that if anyone pushes any new change to the origin repository in master branch, the job should auto build and deploy 
+the latest code on the Storage server under /var/www/html directory. Since /var/www/html on Storage server is shared among all apps.
+
+
+3. SSH into Storage Server using sarah user credentials mentioned above. Under sarah user's home you will find a cloned Git repository named web. 
+Under this repository there is an index.html file, update its content to Welcome to the xFusionCorp Industries, then push the changes to the origin into master branch. 
+This push must trigger your Jenkins job and the latest changes must be deployed on the servers, also make sure it deploys the entire repository content not only index.html file.
+
+
+Click on the App button on the top bar to access the app, you should be able to see the latest changes you deployed. Please make sure the required content is loading on the main URL https://<LBR-URL> i.e there should not be any sub-directory like https://<LBR-URL>/web etc.
+
+
+
+############################
+SOLUTION
+############################
+http://git.stratos.xfusioncorp.com/sarah/web.git
+
+0) Install httpd on all 3 APP servers:
+thor@jumphost ~$ ssh tony@stapp01
+thor@jumphost ~$ sudo su -
+[root@stapp01 ~]# yum install httpd -y
+[root@stapp01 ~]# sed -i 's/Listen 80/Listen 8080/g' /etc/httpd/conf/httpd.conf 
+[root@stapp01 ~]# cat /etc/httpd/conf/httpd.conf | grep 80
+#Listen 12.34.56.78:80
+Listen 8080
+#ServerName www.example.com:80
+[root@stapp01 ~]# systemctl restart httpd
+[root@stapp01 ~]# systemctl  status httpd
+● httpd.service - The Apache HTTP Server
+     Loaded: loaded (/usr/lib/systemd/system/httpd.service; disabled; preset: disabled)
+     Active: active (running) since Thu 2025-02-13 13:16:31 UTC; 1s ago
+
+
+thor@jumphost ~$ ssh steve@stapp02
+[steve@stapp02 ~]# sudo su -
+[root@stapp02 ~]# yum install httpd -y
+[root@stapp02 ~]# sed -i 's/Listen 80/Listen 8080/g' /etc/httpd/conf/httpd.conf 
+[root@stapp02 ~]# cat /etc/httpd/conf/httpd.conf | grep 80
+#Listen 12.34.56.78:80
+Listen 8080
+#ServerName www.example.com:80
+[root@stapp02 ~]# systemctl restart httpd
+[root@stapp02 ~]# systemctl status httpd
+● httpd.service - The Apache HTTP Server
+     Loaded: loaded (/usr/lib/systemd/system/httpd.service; disabled; preset: disabled)
+     Active: active (running) since Thu 2025-02-13 13:22:13 UTC; 5s ago
+	 
+thor@jumphost ~$ ssh banner@stapp03
+[banner@stapp03 ~]$ sudo su -
+[root@stapp03 ~]# yum install httpd -y
+[root@stapp03 ~]# sed -i 's/Listen 80/Listen 8080/g' /etc/httpd/conf/httpd.conf 
+[root@stapp03 ~]# cat /etc/httpd/conf/httpd.conf | grep 80
+#Listen 12.34.56.78:80
+Listen 8080
+#ServerName www.example.com:80
+[root@stapp03 ~]# systemctl restart httpd
+[root@stapp03 ~]# systemctl status httpd
+ httpd.service - The Apache HTTP Server
+     Loaded: loaded (/usr/lib/systemd/system/httpd.service; disabled; preset: disabled)
+     Active: active (running) since Thu 2025-02-13 13:23:34 UTC; 6s ago
+
+
+1)Go to Manage Jenkins/Plugins/Available plugins/and install:
+Git, SSH, SSH Credentials, SSH Build Agents "plugins with selected option "Restart Jenkins when installation is complete and no jobs are running"
+
+
+2)Connect to the Jenkins server,generate key and copy it to ststor01:
+thor@jumphost ~$ ssh jenkins@jenkins
+jenkins@jenkins:~$ ssh-keygen -t rsa
+jenkins@jenkins:~$ cd .ssh/
+jenkins@jenkins:~/.ssh$ ls
+id_rsa  id_rsa.pub
+jenkins@jenkins:~/.ssh$ 
+jenkins@jenkins:~/.ssh$ cat id_rsa.pub 
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC3GecECcsODQ/eefajwl+lkyA2yM0uDTw57+v968KL8SRZwg7jrRyQy4OOF/rmPAVKxySMv28sMIoDz63BWjBgMS8QyS2JPHeWnXoCLCfpvggUXSuD3UD6ILiW6OSbVuDs4M8gR/Brx+NMEXEtqPR45GoKtjlW0+X+itcDLyQtEpZ3EfqXhFutPZZoUO82hyT2+Mbggx44DVUmCC6229hOzah3Ea5pqos4Hs7/LO499bLdkqc4YT9tPdFP3wnAIaFLPfjciQGrnjw2VhN++MRJ8KC1IXufDN8gQiMpCibr4IENay6zABo6fXLs21jjRjrJPdnVyYgw09RFExLSCHlPUe64SWNonBxxO46UB2KXJtyfRKqYv0Ej+7BP6078KqsHT9k+pnEXrUcziC8yg1SrCFhza606WHtAhLH/EKNW1DPuvKBnMFPpS8taiOt0idK4uUYlQl2+EJw65O7q4A9xLJjsey5P6FdwLuqtgOA2nbFAWIZgBIkf6noOlR3wX0s= jenkins@jenkins.stratos.xfusioncorp.com
+jenkins@jenkins:~/.ssh$ 
+jenkins@jenkins:~$ ssh-copy-id natasha@ststor01
+[natasha@ststor01 ~]$ cat .ssh/authorized_keys 
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC3GecECcsODQ/eefajwl+lkyA2yM0uDTw57+v968KL8SRZwg7jrRyQy4OOF/rmPAVKxySMv28sMIoDz63BWjBgMS8QyS2JPHeWnXoCLCfpvggUXSuD3UD6ILiW6OSbVuDs4M8gR/Brx+NMEXEtqPR45GoKtjlW0+X+itcDLyQtEpZ3EfqXhFutPZZoUO82hyT2+Mbggx44DVUmCC6229hOzah3Ea5pqos4Hs7/LO499bLdkqc4YT9tPdFP3wnAIaFLPfjciQGrnjw2VhN++MRJ8KC1IXufDN8gQiMpCibr4IENay6zABo6fXLs21jjRjrJPdnVyYgw09RFExLSCHlPUe64SWNonBxxO46UB2KXJtyfRKqYv0Ej+7BP6078KqsHT9k+pnEXrUcziC8yg1SrCFhza606WHtAhLH/EKNW1DPuvKBnMFPpS8taiOt0idK4uUYlQl2+EJw65O7q4A9xLJjsey5P6FdwLuqtgOA2nbFAWIZgBIkf6noOlR3wX0s= jenkins@jenkins.stratos.xfusioncorp.com
+[natasha@ststor01 www]# sudo chown -R natasha html/
+
+
+3)Clicking New Item from the Jenkins dashboard,select "Freestyle Job", and then giving the item a name "nautilus-app-deployment"
+Source Code Management/Git/Repositories/Repository URL:http://git.stratos.xfusioncorp.com/sarah/web.git
+Build Triggers/Poll SCM/Schedule: * * * * *
+Build Environment/Build Steps/Command: scp * natasha@ststor01:/var/www/html
+
+
+4)Start Job:Dashboard/nautilus-app-deployment/Build now
+web page will show "Welcome":
+Console Output
+Started by user admin
+Running as SYSTEM
+Building in workspace /var/lib/jenkins/workspace/nautilus-app-deployment
+The recommended git tool is: NONE
+No credentials specified
+Cloning the remote Git repository
+Cloning repository http://git.stratos.xfusioncorp.com/sarah/web.git
+ > git init /var/lib/jenkins/workspace/nautilus-app-deployment # timeout=10
+Fetching upstream changes from http://git.stratos.xfusioncorp.com/sarah/web.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.25.1'
+ > git fetch --tags --force --progress -- http://git.stratos.xfusioncorp.com/sarah/web.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url http://git.stratos.xfusioncorp.com/sarah/web.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+Avoid second fetch
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+Checking out Revision e23296035c5cbae789006a51565ad9ac1174bd9c (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f e23296035c5cbae789006a51565ad9ac1174bd9c # timeout=10
+Commit message: "Added index.html file"
+First time build. Skipping changelog.
+[nautilus-app-deployment] $ /bin/sh -xe /tmp/jenkins6858979006715542524.sh
++ scp index.html natasha@ststor01:/var/www/html
+Finished: SUCCESS
+
+
+5)Login to Storage Server,clone repo and and change file in Gitea repository:
+thor@jumphost ~$ ssh sarah@ststor01
+sarah@ststor01's password: 
+[sarah@ststor01 ~]$ pwd
+/home/sarah
+[sarah@ststor01 ~]$ git clone http://git.stratos.xfusioncorp.com/sarah/web.git
+Cloning into 'web'...
+remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (3/3), done.
+
+[sarah@ststor01 ~]$ ls
+web
+[sarah@ststor01 ~]$ cd web/
+[sarah@ststor01 web]$ ls
+index.html
+[sarah@ststor01 web]$ cat index.html 
+Welcome
+[sarah@ststor01 web]$ vi index.html
+[sarah@ststor01 web]$ cat index.html 
+Welcome to the xFusionCorp Industries
+
+[sarah@ststor01 web]$ git commit -am "Updated index.html"
+[master 52c89c3] Updated index.html
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[sarah@ststor01 web]$ git push origin master
+Username for 'http://git.stratos.xfusioncorp.com': sarah
+Password for 'http://sarah@git.stratos.xfusioncorp.com': 
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Writing objects: 100% (3/3), 290 bytes | 290.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+remote: . Processing 1 references
+remote: Processed 1 references in total
+To http://git.stratos.xfusioncorp.com/sarah/web.git
+   45be2ea..52c89c3  master -> master
+[sarah@ststor01 web]$ 
+
+
+
+6)Again Start Job:Dashboard/nautilus-app-deployment/Build now
+web page will show "Welcome to the xFusionCorp Industries":
+Console Output:
+Started by an SCM change
+Running as SYSTEM
+Building in workspace /var/lib/jenkins/workspace/nautilus-app-deployment
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/nautilus-app-deployment/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url http://git.stratos.xfusioncorp.com/sarah/web.git # timeout=10
+Fetching upstream changes from http://git.stratos.xfusioncorp.com/sarah/web.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.25.1'
+ > git fetch --tags --force --progress -- http://git.stratos.xfusioncorp.com/sarah/web.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+Checking out Revision 85c03f6ad68228b65220e0147e1afeaaf3454f19 (refs/remotes/origin/master)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 85c03f6ad68228b65220e0147e1afeaaf3454f19 # timeout=10
+Commit message: "Updated index.html"
+ > git rev-list --no-walk e23296035c5cbae789006a51565ad9ac1174bd9c # timeout=10
+[nautilus-app-deployment] $ /bin/sh -xe /tmp/jenkins17328392505344138402.sh
++ scp index.html natasha@ststor01:/var/www/html
+Finished: SUCCESS
 
