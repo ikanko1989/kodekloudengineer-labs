@@ -1,1 +1,184 @@
+The DevOps team was looking for a solution where they want to restart Apache service on all app servers if the deployment goes fine on these servers in Stratos Datacenter. 
+After having a discussion, they came up with a solution to use Jenkins chained builds so that they can use a downstream job for services which should only be triggered by the deployment job. 
+So as per the requirements mentioned below configure the required Jenkins jobs.
 
+Click on the Jenkins button on the top bar to access the Jenkins UI. Login using username admin and Adm!n321 password.
+Similarly you can access Gitea UI on port 8090 and username and password for Git is sarah and Sarah_pass123 respectively. Under user sarah you will find a repository named web.
+Apache is already installed and configured on all app server so no changes are needed there. 
+The doc root /var/www/html on all these app servers is shared among the Storage server under /var/www/html directory.
+
+
+1. Create a Jenkins job named nautilus-app-deployment and configure it to pull change from the master branch of web repository on Storage server under /var/www/html directory, 
+which is already a local git repository tracking the origin web repository. Since /var/www/html on Storage server is a shared volume so changes should auto reflect on all apps.
+
+2. Create another Jenkins job named manage-services and make it a downstream job for nautilus-app-deployment job. Things to take care about this job are:
+a. This job should restart httpd service on all app servers.
+b. Trigger this job only if the upstream job i.e nautilus-app-deployment is stable.
+
+LB server is already configured. Click on the App button on the top bar to access the app. 
+
+http://git.stratos.xfusioncorp.com/sarah/web.git
+
+
+############################
+SOLUTION
+############################
+
+0) Install java on Storage server:
+thor@jumphost ~$ ssh natasha@ststor01
+The authenticity of host 'ststor01 (172.16.238.15)' can't be established.
+ED25519 key fingerprint is SHA256:e148/JoTfIyfi9VNnzkqi9pJanaeN6faxRhkzN80Igw.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'ststor01' (ED25519) to the list of known hosts.
+natasha@ststor01's password: 
+[ natasha@ststor01 ~]$ cd /var/www/html/
+[ natasha@ststor01]$ ls
+[ natasha@ststor01 ~]$ sudo yum install java-11-openjdk -y
+[ natasha@ststor01 ~]$ java --version
+openjdk 11.0.20.1 2023-08-24 LTS
+OpenJDK Runtime Environment (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS)
+OpenJDK 64-Bit Server VM (Red_Hat-11.0.20.1.1-2) (build 11.0.20.1+1-LTS, mixed mode, sharing)
+[root@ststor01 ~]# cd /var/www/html
+[root@ststor01 html]# ls
+index.html
+[root@ststor01 html]# cat index.html 
+Welcome
+[root@ststor01 html]#
+
+
+1)Go to Manage Jenkins/Plugins/Available plugins/and install:
+Git, SSH, SSH Credentials, SSH Build Agents,Publish Over SSH,Pipeline,Publish over SSH "plugins with selected option "Restart Jenkins when installation is complete and no jobs are running"
+
+2)Go to Manage Jenkins/Credentials/Domains(Global)/+Add Credentials(UN:natasha,Pass:Bl@kW,ID:ststor01),(UN:tony,Pass:Ir0nM@n,ID:stapp01),(UN:steve,Pass:Am3ric@,ID:stapp02),(UN:banner,Pass:BigGr33n,ID:stapp03),(UN:sarah,Pass:Sarah_pass123,ID:sarah)
+
+3)Go to Manage Jenkins/Nodes/+New Node/Node name:Storage Server,type:"Permanent Agent",Labels:"ststor01",Remote root directory:/var/www/html  /Launch method:launch agent via ssh,Host:ststor01,Credentials:natasha/Host Key Verification Strategy:Non verifiying Verification Strategy
+
+
+4)Go to Manage Jenkins/System/SSH remote hosts/Hostname:stapp01,Port:22,Credentials:tony,Check Connection/Save
+  Go to Manage Jenkins/System/SSH remote hosts/Hostname:stapp02,Port:22,Credentials:steve,Check Connection/Save
+  Go to Manage Jenkins/System/SSH remote hosts/Hostname:stapp03,Port:22,Credentials:banner,Check Connection/Save
+
+  Publish over SSH/SSH Servers/SSH Server/Name:ststor01, Hostname:ststor01,Username:natasha,Advanced/Use password authentication, or use a different key/Passphrase/Password:Bl@kW
+
+
+5)Clicking New Item from the Jenkins dashboard,select "Pipeline", and then giving the item a name "nautilus-app-deployment"
+pipeline {
+    agent {
+        label 'ststor01'
+    }
+    stages {
+        stage('Checkout and Update Code') {
+            steps {
+                // Checkout the code from the repository
+                git credentialsId: 'sarah', url: 'http://git.stratos.xfusioncorp.com/sarah/web.git'
+                
+                // Ensure the local repository is updated by pulling the latest changes
+                sh 'cd /var/www/html && git pull origin master'
+            }
+        }
+    }
+}
+
+
+6)Start Job:Dashboard/nautilus-app-deployment/Build now
+web page will show "Welcome to KodeKloud!":
+
+Console Output
+Started by user admin
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on ststor01 in /var/www/html/workspace/nautilus-app-deployment
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout and Update Code)
+[Pipeline] git
+The recommended git tool is: NONE
+using credential sarah
+Fetching changes from the remote Git repository
+Checking out Revision c83e7b1e5366e0a669d16eb00433ad0e2293a662 (refs/remotes/origin/master)
+ > git rev-parse --resolve-git-dir /var/www/html/workspace/nautilus-app-deployment/.git # timeout=10
+ > git config remote.origin.url http://git.stratos.xfusioncorp.com/sarah/web.git # timeout=10
+Fetching upstream changes from http://git.stratos.xfusioncorp.com/sarah/web.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+using GIT_ASKPASS to set credentials 
+ > git fetch --tags --force --progress -- http://git.stratos.xfusioncorp.com/sarah/web.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f c83e7b1e5366e0a669d16eb00433ad0e2293a662 # timeout=10
+ > git branch -a -v --no-abbrev # timeout=10
+ > git checkout -b master c83e7b1e5366e0a669d16eb00433ad0e2293a662 # timeout=10
+Commit message: "Updated index.html file"
+First time build. Skipping changelog.
+[Pipeline] sh
++ cd /var/www/html
++ git pull origin master
+From http://git.stratos.xfusioncorp.com/sarah/web
+ * branch            master     -> FETCH_HEAD
+   fca2bd7..c83e7b1  master     -> origin/master
+Updating fca2bd7..c83e7b1
+Fast-forward
+ index.html | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
+
+
+
+5)Clicking New Item from the Jenkins dashboard,select "Freestyle Job", and then giving the item a name "manage-services"
+Build Triggers/Build after other projects are built/Projects to watch:nautilus-app-deployment/trigger only if build stable
+Build steps/Execute shell script on remote host using ssh/SSH site: tony@stapp01:22/Command: echo Ir0nM@n | sudo -S systemctl restart httpd
+Build steps/Execute shell script on remote host using ssh/SSH site: steve@stapp02:22/Command: echo Am3ric@ | sudo -S systemctl restart httpd
+Build steps/Execute shell script on remote host using ssh/SSH site: banner@stapp03:22/Command: echo BigGr33n | sudo -S systemctl restart httpd
+
+7)Start Job:Dashboard/manage-services/Build now
+Console Output
+Started by user admin
+Running as SYSTEM
+Building on the built-in node in workspace /var/lib/jenkins/workspace/manage-services
+[SSH] script:
+echo Ir0nM@n | sudo -S systemctl restart httpd
+[SSH] executing...
+[sudo] password for tony: 
+[SSH] completed
+[SSH] exit-status: 0
+[SSH] script:
+echo Am3ric@ | sudo -S systemctl restart httpd
+[SSH] executing...
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+[sudo] password for steve: 
+[SSH] completed
+[SSH] exit-status: 0
+[SSH] script:
+echo BigGr33n | sudo -S systemctl restart httpd
+[SSH] executing...
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+[sudo] password for banner: 
+[SSH] completed
+[SSH] exit-status: 0
+Finished: SUCCESS
+
+
+8)check on app server;
+[root@ststor01 ~]# cd /var/www/html
+[root@ststor01 html]# ls
+caches  index.html  remoting  remoting.jar  workspace
+[root@ststor01 html]# cat index.html 
+Welcome to KodeKloud!
+[root@ststor01 html]#
+
+tony@stapp01 html]$ cat index.html 
+Welcome to KodeKloud!
