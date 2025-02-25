@@ -110,3 +110,32 @@ __Level 4__
 * Lab03 - Kubernetes Nginx and PhpFPM Setup
 * Lab04 - Deploy Drupal App on Kubernetes
 * Lab05 - Deploy Guest Book App on Kubernetes
+
+## Jenkins  
+__Level 1__  
+* Lab01 - Set Up Jenkins Server
+* Lab02 - Install Jenkins Plugins
+* Lab03 - Configure Jenkins User Access
+* Lab04 - Organize Jenkins Jobs with Folders
+* Lab05 - Configure Jenkins Job for Package Installation
+
+__Level 2__  
+* Lab01 - Jenkins Views
+* Lab02 - Jenkins Parameterized Builds
+* Lab03 - Jenkins Workspaces
+* Lab04 - Jenkins Database Backup Job
+* Lab05 - Jenkins Scheduled Jobs
+
+__Level 3__  
+* Lab01 - Jenkins Slave Nodes
+* Lab02 - Jenkins Project Security
+* Lab03 - Jenkins Build Images
+* Lab04 - Jenkins Deploy Pipeline
+* Lab05 - Jenkins Conditional Pipeline
+
+__Level 4__  
+* Lab01 - Jenkins Deployment Job
+* Lab02 - Jenkins Chained Builds
+
+
+
