@@ -1,12 +1,13 @@
 # KodeKloud Engineer - labs
 
 This repository is my personal collection of [KodeKloud Engineer labs](https://engineer.kodekloud.com/) (questions & answers) , where I document my learning journey to improve my skills in DevOps technologies.
-I've organized the labs into four key areas:
+I've organized the labs into areas:
 
 ## * Kubernetes 
 ## * Docker 
 ## * Git 
 ## * Jenkins 
+## * Cloud(AWS) 
 Each area contains 4 levels, with progressively more challenging labs that range from beginner to advanced.  
 The labs cover both questions and answers to help me build a strong, hands-on understanding of these tools.
 
@@ -155,5 +156,10 @@ __Level 4__
 * Lab01 - Jenkins Deployment Job
 * Lab02 - Jenkins Chained Builds
 
-
-
+## Cloud(AWS) 
+__Level 1__  
+* Lab01 - Create Key Pair
+* Lab02 - Create Security Group
+* Lab03 - Create GP3 Volume
+* Lab04 - Allocate Elastic IP
+* Lab05 - Launch EC2 Instance
