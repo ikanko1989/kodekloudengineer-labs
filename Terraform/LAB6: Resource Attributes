@@ -1,0 +1,214 @@
+root in ~/terraform-projects/project-chronos via 💠 default on ☁️  (us-east-1) 
+❯ ll
+total 12
+drwxr-xr-x 2 root root 4096 Jul 21 10:24 ./
+drwxr-xr-x 3 root root 4096 Jul 21 10:24 ../
+-rw-r--r-- 1 root root  176 Jul 21 10:32 main.tf
+
+
+
+
+root in ~/terraform-projects/project-chronos via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+ resource "time_static" "time_update" {
+}
+
+resource "local_file" "time" {
+  filename = "/root/time.txt"
+  content = "Time stamp of this file is ${time_static.time_update.id}"
+}
+
+
+
+root in ~/terraform-projects/project-chronos via 💠 default on ☁️  (us-east-1) 
+❯ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding latest version of hashicorp/local...
+- Finding latest version of hashicorp/time...
+- Installing hashicorp/local v2.5.3...
+- Installed hashicorp/local v2.5.3 (signed by HashiCorp)
+- Installing hashicorp/time v0.13.1...
+- Installed hashicorp/time v0.13.1 (signed by HashiCorp)
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+
+
+
+
+
+root in ~/terraform-projects/project-chronos via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.time will be created
+  + resource "local_file" "time" {
+      + content              = (known after apply)
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/time.txt"
+      + id                   = (known after apply)
+    }
+
+  # time_static.time_update will be created
+  + resource "time_static" "time_update" {
+      + day     = (known after apply)
+      + hour    = (known after apply)
+      + id      = (known after apply)
+      + minute  = (known after apply)
+      + month   = (known after apply)
+      + rfc3339 = (known after apply)
+      + second  = (known after apply)
+      + unix    = (known after apply)
+      + year    = (known after apply)
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+
+
+
+
+
+root in ~/terraform-projects/project-chronos via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.time will be created
+  + resource "local_file" "time" {
+      + content              = (known after apply)
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/time.txt"
+      + id                   = (known after apply)
+    }
+
+  # time_static.time_update will be created
+  + resource "time_static" "time_update" {
+      + day     = (known after apply)
+      + hour    = (known after apply)
+      + id      = (known after apply)
+      + minute  = (known after apply)
+      + month   = (known after apply)
+      + rfc3339 = (known after apply)
+      + second  = (known after apply)
+      + unix    = (known after apply)
+      + year    = (known after apply)
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+time_static.time_update: Creating...
+time_static.time_update: Creation complete after 0s [id=2025-07-21T10:32:43Z]
+local_file.time: Creating...
+local_file.time: Creation complete after 0s [id=7fd9ae3167e4118e15282bf65aca6e60099d4c9e]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+
+
+
+
+
+root in ~/terraform-projects/project-chronos via 💠 default on ☁️  (us-east-1) 
+❯ terraform show
+# local_file.time:
+resource "local_file" "time" {
+    content              = "Time stamp of this file is 2025-07-21T10:32:43Z"
+    content_base64sha256 = "3C1+TLSA+Xg+fL1ObnUjNjk60CtLvB4lDfpQDjraZac="
+    content_base64sha512 = "EcCqysWdLkh19XB7M2Ni395/2WFn1qtDiCQHPsZnRkCf77S74WVsNyJt+NinsD7sAJpa/mt35u5LJpZELCmioQ=="
+    content_md5          = "11f178a8082732897c0f633d11e5f938"
+    content_sha1         = "7fd9ae3167e4118e15282bf65aca6e60099d4c9e"
+    content_sha256       = "dc2d7e4cb480f9783e7cbd4e6e752336393ad02b4bbc1e250dfa500e3ada65a7"
+    content_sha512       = "11c0aacac59d2e4875f5707b336362dfde7fd96167d6ab438824073ec66746409fefb4bbe1656c37226df8d8a7b03eec009a5afe6b77e6ee4b2696442c29a2a1"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/time.txt"
+    id                   = "7fd9ae3167e4118e15282bf65aca6e60099d4c9e"
+}
+
+# time_static.time_update:
+resource "time_static" "time_update" {
+    day     = 21
+    hour    = 10
+    id      = "2025-07-21T10:32:43Z"
+    minute  = 32
+    month   = 7
+    rfc3339 = "2025-07-21T10:32:43Z"
+    second  = 43
+    unix    = 1753093963
+    year    = 2025
+}
+
+
+
+
+root in ~/terraform-projects/project-chronos via 💠 default on ☁️  (us-east-1) 
+❯ cd 
+
+root in ~ on ☁️  (us-east-1) 
+❯ ll
+total 128
+drwx------ 1 root root  4096 Jul 21 10:32 ./
+drwxr-xr-x 1 root root 69632 Jul 21 10:32 ../
+drwxr-xr-x 2 root root  4096 Oct 23  2024 .aws/
+-rw-r--r-- 1 root root  3406 Oct 23  2024 .bashrc
+drwxr-xr-x 1 root root  4096 Jul 21 10:25 .cache/
+drwxr-xr-x 1 root root  4096 Oct 23  2024 .config/
+drwxr-xr-x 1 root root  4096 Oct 23  2024 .local/
+-rw-r--r-- 1 root root   161 Jul  9  2019 .profile
+-rw-r--r-- 1 root root   339 Jul 21 10:16 README.md
+drwxr-xr-x 1 root root  4096 Jul 21 10:25 .terminal_logs/
+drwxr-xr-x 2 root root  4096 Jul 21 10:32 .terraform.d/
+drwxr-xr-x 3 root root  4096 Jul 21 10:24 terraform-projects/
+-rwxr-xr-x 1 root root    47 Jul 21 10:32 time.txt*
+
+root in ~ on ☁️  (us-east-1) 
+❯ cat time.txt 
+Time stamp of this file is 2025-07-21T10:32:43Z
