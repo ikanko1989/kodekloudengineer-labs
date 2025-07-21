@@ -1,0 +1,520 @@
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ ll
+total 16
+drwxr-xr-x 2 root root 4096 Jul 21 13:05 ./
+drwxr-xr-x 3 root root 4096 Jul 21 13:05 ../
+-rw-r--r-- 1 root root  264 Jul 21 10:16 main.tf
+-rw-r--r-- 1 root root  225 Jul 21 10:16 variables.tf
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "file" {
+    filename = var.filename
+    file_permission =  var.permission
+    content = random_string.string.id
+    
+}
+
+resource "random_string" "string" {
+    length = var.length
+    keepers = {
+        length = var.length
+    }  
+    
+}
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ cat variables.tf 
+variable "length" {
+    default = 10
+  
+}
+variable "filename" {
+    default = "/root/random_text"
+}
+variable "content" {
+    default = "This file contains a single line of data"
+}
+variable "permission" {
+    default = 0700
+}
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding latest version of hashicorp/local...
+- Finding latest version of hashicorp/random...
+- Installing hashicorp/local v2.5.3...
+- Installed hashicorp/local v2.5.3 (signed by HashiCorp)
+- Installing hashicorp/random v3.7.2...
+- Installed hashicorp/random v3.7.2 (signed by HashiCorp)
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.file will be created
+  + resource "local_file" "file" {
+      + content              = (known after apply)
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "700"
+      + filename             = "/root/random_text"
+      + id                   = (known after apply)
+    }
+
+  # random_string.string will be created
+  + resource "random_string" "string" {
+      + id          = (known after apply)
+      + keepers     = {
+          + "length" = "10"
+        }
+      + length      = 10
+      + lower       = true
+      + min_lower   = 0
+      + min_numeric = 0
+      + min_special = 0
+      + min_upper   = 0
+      + number      = true
+      + numeric     = true
+      + result      = (known after apply)
+      + special     = true
+      + upper       = true
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply"
+now.
+
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.file will be created
+  + resource "local_file" "file" {
+      + content              = (known after apply)
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "700"
+      + filename             = "/root/random_text"
+      + id                   = (known after apply)
+    }
+
+  # random_string.string will be created
+  + resource "random_string" "string" {
+      + id          = (known after apply)
+      + keepers     = {
+          + "length" = "10"
+        }
+      + length      = 10
+      + lower       = true
+      + min_lower   = 0
+      + min_numeric = 0
+      + min_special = 0
+      + min_upper   = 0
+      + number      = true
+      + numeric     = true
+      + result      = (known after apply)
+      + special     = true
+      + upper       = true
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+random_string.string: Creating...
+random_string.string: Creation complete after 0s [id=ui{Qw-DOoK]
+local_file.file: Creating...
+local_file.file: Creation complete after 0s [id=a66d4950b2fc140deee1392ca09124a7865b16c6]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) took 2s 
+❯ terraform show
+# local_file.file:
+resource "local_file" "file" {
+    content              = "ui{Qw-DOoK"
+    content_base64sha256 = "KEbe8C6m8Mju6BItM8oQ4iuegpbnd15PxcpqYWe4qKQ="
+    content_base64sha512 = "jwDrW3+Cp/NJO9ybccpEVEP5F0GH994nL0iC0Pt+WXsZcpMg7ohK70P8w02txKeToRp22MSvlQeNIZBoj7sV7g=="
+    content_md5          = "74126e70d85b41e9e893c6b0e1bb7f1f"
+    content_sha1         = "a66d4950b2fc140deee1392ca09124a7865b16c6"
+    content_sha256       = "2846def02ea6f0c8eee8122d33ca10e22b9e8296e7775e4fc5ca6a6167b8a8a4"
+    content_sha512       = "8f00eb5b7f82a7f3493bdc9b71ca445443f9174187f7de272f4882d0fb7e597b19729320ee884aef43fcc34dadc4a793a11a76d8c4af95078d2190688fbb15ee"
+    directory_permission = "0777"
+    file_permission      = "700"
+    filename             = "/root/random_text"
+    id                   = "a66d4950b2fc140deee1392ca09124a7865b16c6"
+}
+
+# random_string.string:
+resource "random_string" "string" {
+    id          = "ui{Qw-DOoK"
+    keepers     = {
+        "length" = "10"
+    }
+    length      = 10
+    lower       = true
+    min_lower   = 0
+    min_numeric = 0
+    min_special = 0
+    min_upper   = 0
+    number      = true
+    numeric     = true
+    result      = "ui{Qw-DOoK"
+    special     = true
+    upper       = true
+}
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ cat /root/random_text 
+ui{Qw-DOoK
+
+
+
+
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "file" {
+    filename = var.filename
+    file_permission =  var.permission
+    content = random_string.string.id
+    
+}
+
+resource "random_string" "string" {
+    length = var.length
+    keepers = {
+        length = var.length
+    
+    }  
+    lifecycle {
+      create_before_destroy = true
+    }
+
+ 
+}
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+random_string.string: Refreshing state... [id=ui{Qw-DOoK]
+local_file.file: Refreshing state... [id=a66d4950b2fc140deee1392ca09124a7865b16c6]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+-/+ destroy and then create replacement
++/- create replacement and then destroy
+
+Terraform will perform the following actions:
+
+  # local_file.file must be replaced
+-/+ resource "local_file" "file" {
+      ~ content              = "ui{Qw-DOoK" # forces replacement -> (known after apply) # forces replacement
+      ~ content_base64sha256 = "KEbe8C6m8Mju6BItM8oQ4iuegpbnd15PxcpqYWe4qKQ=" -> (known after apply)
+      ~ content_base64sha512 = "jwDrW3+Cp/NJO9ybccpEVEP5F0GH994nL0iC0Pt+WXsZcpMg7ohK70P8w02txKeToRp22MSvlQeNIZBoj7sV7g==" -> (known after apply)
+      ~ content_md5          = "74126e70d85b41e9e893c6b0e1bb7f1f" -> (known after apply)
+      ~ content_sha1         = "a66d4950b2fc140deee1392ca09124a7865b16c6" -> (known after apply)
+      ~ content_sha256       = "2846def02ea6f0c8eee8122d33ca10e22b9e8296e7775e4fc5ca6a6167b8a8a4" -> (known after apply)
+      ~ content_sha512       = "8f00eb5b7f82a7f3493bdc9b71ca445443f9174187f7de272f4882d0fb7e597b19729320ee884aef43fcc34dadc4a793a11a76d8c4af95078d2190688fbb15ee" -> (known after apply)
+      ~ file_permission      = "700" -> "770" # forces replacement
+      ~ id                   = "a66d4950b2fc140deee1392ca09124a7865b16c6" -> (known after apply)
+        # (2 unchanged attributes hidden)
+    }
+
+  # random_string.string must be replaced
++/- resource "random_string" "string" {
+      ~ id          = "ui{Qw-DOoK" -> (known after apply)
+      ~ keepers     = { # forces replacement
+          ~ "length" = "10" -> "12"
+        }
+      ~ length      = 10 -> 12 # forces replacement
+      ~ result      = "ui{Qw-DOoK" -> (known after apply)
+        # (9 unchanged attributes hidden)
+    }
+
+Plan: 2 to add, 0 to change, 2 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply"
+now.
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+random_string.string: Refreshing state... [id=ui{Qw-DOoK]
+local_file.file: Refreshing state... [id=a66d4950b2fc140deee1392ca09124a7865b16c6]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+-/+ destroy and then create replacement
++/- create replacement and then destroy
+
+Terraform will perform the following actions:
+
+  # local_file.file must be replaced
+-/+ resource "local_file" "file" {
+      ~ content              = "ui{Qw-DOoK" # forces replacement -> (known after apply) # forces replacement
+      ~ content_base64sha256 = "KEbe8C6m8Mju6BItM8oQ4iuegpbnd15PxcpqYWe4qKQ=" -> (known after apply)
+      ~ content_base64sha512 = "jwDrW3+Cp/NJO9ybccpEVEP5F0GH994nL0iC0Pt+WXsZcpMg7ohK70P8w02txKeToRp22MSvlQeNIZBoj7sV7g==" -> (known after apply)
+      ~ content_md5          = "74126e70d85b41e9e893c6b0e1bb7f1f" -> (known after apply)
+      ~ content_sha1         = "a66d4950b2fc140deee1392ca09124a7865b16c6" -> (known after apply)
+      ~ content_sha256       = "2846def02ea6f0c8eee8122d33ca10e22b9e8296e7775e4fc5ca6a6167b8a8a4" -> (known after apply)
+      ~ content_sha512       = "8f00eb5b7f82a7f3493bdc9b71ca445443f9174187f7de272f4882d0fb7e597b19729320ee884aef43fcc34dadc4a793a11a76d8c4af95078d2190688fbb15ee" -> (known after apply)
+      ~ file_permission      = "700" -> "770" # forces replacement
+      ~ id                   = "a66d4950b2fc140deee1392ca09124a7865b16c6" -> (known after apply)
+        # (2 unchanged attributes hidden)
+    }
+
+  # random_string.string must be replaced
++/- resource "random_string" "string" {
+      ~ id          = "ui{Qw-DOoK" -> (known after apply)
+      ~ keepers     = { # forces replacement
+          ~ "length" = "10" -> "12"
+        }
+      ~ length      = 10 -> 12 # forces replacement
+      ~ result      = "ui{Qw-DOoK" -> (known after apply)
+        # (9 unchanged attributes hidden)
+    }
+
+Plan: 2 to add, 0 to change, 2 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+local_file.file: Destroying... [id=a66d4950b2fc140deee1392ca09124a7865b16c6]
+local_file.file: Destruction complete after 0s
+random_string.string: Creating...
+random_string.string: Creation complete after 0s [id=IA$NA<BX@%#i]
+local_file.file: Creating...
+local_file.file: Creation complete after 0s [id=d4e6cf0c3c88b777668fc65dfdfd8c290159d942]
+random_string.string (deposed object be95c055): Destroying... [id=ui{Qw-DOoK]
+random_string.string: Destruction complete after 0s
+
+Apply complete! Resources: 2 added, 0 changed, 2 destroyed.
+
+
+
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "file" {
+    filename = var.filename
+    file_permission =  var.permission
+    content = "This is a random string - ${random_string.string.id}"
+   
+   lifecycle {
+     create_before_destroy = true
+   }
+    
+}
+
+resource "random_string" "string" {
+    length = var.length
+    keepers = {
+        length = var.length
+    }
+    lifecycle {
+        create_before_destroy =  true
+    }
+    
+}
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+random_string.string: Refreshing state... [id=IA$NA<BX@%#i]
+local_file.file: Refreshing state... [id=d4e6cf0c3c88b777668fc65dfdfd8c290159d942]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
++/- create replacement and then destroy
+
+Terraform will perform the following actions:
+
+  # local_file.file must be replaced
++/- resource "local_file" "file" {
+      ~ content              = "IA$NA<BX@%#i" -> "This is a random string - IA$NA<BX@%#i" # forces replacement
+      ~ content_base64sha256 = "YmSZSUSuZi30LFcyzv+LYC9w4CC00/iVzmnUCn/xtG8=" -> (known after apply)
+      ~ content_base64sha512 = "X/m3ZMy2G1F9+EnwNZOiTWl06445u/VcMNckj23Fjsv15iiYZ5BLWvZHPOQAQCxCxqt3RPYEG/iwR1bSke/gKQ==" -> (known after apply)
+      ~ content_md5          = "87a5908dbd0db3a94f9cc85b9def7811" -> (known after apply)
+      ~ content_sha1         = "d4e6cf0c3c88b777668fc65dfdfd8c290159d942" -> (known after apply)
+      ~ content_sha256       = "6264994944ae662df42c5732ceff8b602f70e020b4d3f895ce69d40a7ff1b46f" -> (known after apply)
+      ~ content_sha512       = "5ff9b764ccb61b517df849f03593a24d6974eb8e39bbf55c30d7248f6dc58ecbf5e6289867904b5af6473ce400402c42c6ab7744f6041bf8b04756d291efe029" -> (known after apply)
+      ~ id                   = "d4e6cf0c3c88b777668fc65dfdfd8c290159d942" -> (known after apply)
+        # (3 unchanged attributes hidden)
+    }
+
+Plan: 1 to add, 0 to change, 1 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+local_file.file: Creating...
+local_file.file: Creation complete after 0s [id=d9cd35a07919077e8700dde1bfd0bf1289e340d4]
+local_file.file (deposed object 5d10ac3a): Destroying... [id=d4e6cf0c3c88b777668fc65dfdfd8c290159d942]
+local_file.file: Destruction complete after 0s
+
+Apply complete! Resources: 1 added, 0 changed, 1 destroyed.
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+
+
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "random_pet" "super_pet" {
+    length = var.length
+    prefix = var.prefix
+    lifecycle {
+      prevent_destroy = true
+    }
+}
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ cat variables.tf 
+variable "length" {
+    default = 10
+    
+}
+variable "prefix" {
+    default = "Mr"
+}
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # random_pet.super_pet will be created
+  + resource "random_pet" "super_pet" {
+      + id        = (known after apply)
+      + length    = 10
+      + prefix    = "Mr"
+      + separator = "-"
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply"
+now.
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # random_pet.super_pet will be created
+  + resource "random_pet" "super_pet" {
+      + id        = (known after apply)
+      + length    = 10
+      + prefix    = "Mr"
+      + separator = "-"
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+random_pet.super_pet: Creating...
+random_pet.super_pet: Creation complete after 0s [id=Mr-frequently-hugely-hopelessly-wrongly-awfully-yearly-allegedly-rarely-stable-bird]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ terraform show
+# random_pet.super_pet:
+resource "random_pet" "super_pet" {
+    id        = "Mr-frequently-hugely-hopelessly-wrongly-awfully-yearly-allegedly-rarely-stable-bird"
+    length    = 10
+    prefix    = "Mr"
+    separator = "-"
+}
+
+root in ~/terraform-projects/project-mysterio via 💠 default on ☁️  (us-east-1) 
+❯ 
