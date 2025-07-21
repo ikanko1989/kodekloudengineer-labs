@@ -1,0 +1,564 @@
+root in ~/terraform-projects/key-generator via 💠 default on ☁️  (us-east-1) 
+❯ ll
+total 60
+drwxr-xr-x 4 root root  4096 Jul 21 10:53 ./
+drwxr-xr-x 4 root root  4096 Jul 21 10:40 ../
+-rw-r--r-- 1 root root   197 Jul 21 10:54 key.tf
+drwxr-xr-x 2 root root  4096 Jul 21 10:53 root/
+drwxr-xr-x 3 root root  4096 Jul 21 10:44 .terraform/
+-rw-r--r-- 1 root root  2197 Jul 21 10:53 .terraform.lock.hcl
+-rw-r--r-- 1 root root 17372 Jul 21 10:53 terraform.tfstate
+-rw-r--r-- 1 root root 12613 Jul 21 10:53 terraform.tfstate.backup
+
+
+
+
+
+root in ~/terraform-projects/key-generator via 💠 default on ☁️  (us-east-1) 
+❯ cat key.tf 
+resource "tls_private_key" "pvtkey" {
+ algorithm = "RSA"
+ rsa_bits =  4096
+}
+
+resource "local_file" "key_details" {
+  filename = "/root/key.txt"
+  content = tls_private_key.pvtkey.private_key_pem
+}
+
+
+
+
+
+root in ~/terraform-projects/key-generator via 💠 default on ☁️  (us-east-1) 
+❯ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Reusing previous version of hashicorp/tls from the dependency lock file
+- Reusing previous version of hashicorp/local from the dependency lock file
+- Using previously-installed hashicorp/tls v4.1.0
+- Using previously-installed hashicorp/local v2.5.3
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+
+
+
+
+
+root in ~/terraform-projects/key-generator via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+tls_private_key.pvtkey: Refreshing state... [id=0fe45a7094b931d7a37a392f0d6afc2e29554ab7]
+local_file.key_details: Refreshing state... [id=a645a5f4391d63195156a451131ff35aea7f6f63]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # local_file.key_details must be replaced
+-/+ resource "local_file" "key_details" {
+      ~ content_base64sha256 = "/s2RLQMv8vJ6oPM/1VrP1N1QTURxJhFoeWnQldikyHk=" -> (known after apply)
+      ~ content_base64sha512 = "2sk38hujCjODffP+XYr2XBvCQXs2yhMnIB+0W/UTnF9Ji+drb41kvFjIZdFGHhM5jNMaOtGxX1TSwqPc4jc1rQ==" -> (known after apply)
+      ~ content_md5          = "6217a6fbd0fb9670d6c97022aa96b216" -> (known after apply)
+      ~ content_sha1         = "a645a5f4391d63195156a451131ff35aea7f6f63" -> (known after apply)
+      ~ content_sha256       = "fecd912d032ff2f27aa0f33fd55acfd4dd504d44712611687969d095d8a4c879" -> (known after apply)
+      ~ content_sha512       = "dac937f21ba30a33837df3fe5d8af65c1bc2417b36ca1327201fb45bf5139c5f498be76b6f8d64bc58c865d1461e13398cd31a3ad1b15f54d2c2a3dce23735ad" -> (known after apply)
+      ~ filename             = "root/key.txt" -> "/root/key.txt" # forces replacement
+      ~ id                   = "a645a5f4391d63195156a451131ff35aea7f6f63" -> (known after apply)
+        # (3 unchanged attributes hidden)
+    }
+
+Plan: 1 to add, 0 to change, 1 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply"
+now.
+
+
+
+
+
+root in ~/terraform-projects/key-generator via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+tls_private_key.pvtkey: Refreshing state... [id=0fe45a7094b931d7a37a392f0d6afc2e29554ab7]
+local_file.key_details: Refreshing state... [id=a645a5f4391d63195156a451131ff35aea7f6f63]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # local_file.key_details must be replaced
+-/+ resource "local_file" "key_details" {
+      ~ content_base64sha256 = "/s2RLQMv8vJ6oPM/1VrP1N1QTURxJhFoeWnQldikyHk=" -> (known after apply)
+      ~ content_base64sha512 = "2sk38hujCjODffP+XYr2XBvCQXs2yhMnIB+0W/UTnF9Ji+drb41kvFjIZdFGHhM5jNMaOtGxX1TSwqPc4jc1rQ==" -> (known after apply)
+      ~ content_md5          = "6217a6fbd0fb9670d6c97022aa96b216" -> (known after apply)
+      ~ content_sha1         = "a645a5f4391d63195156a451131ff35aea7f6f63" -> (known after apply)
+      ~ content_sha256       = "fecd912d032ff2f27aa0f33fd55acfd4dd504d44712611687969d095d8a4c879" -> (known after apply)
+      ~ content_sha512       = "dac937f21ba30a33837df3fe5d8af65c1bc2417b36ca1327201fb45bf5139c5f498be76b6f8d64bc58c865d1461e13398cd31a3ad1b15f54d2c2a3dce23735ad" -> (known after apply)
+      ~ filename             = "root/key.txt" -> "/root/key.txt" # forces replacement
+      ~ id                   = "a645a5f4391d63195156a451131ff35aea7f6f63" -> (known after apply)
+        # (3 unchanged attributes hidden)
+    }
+
+Plan: 1 to add, 0 to change, 1 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+local_file.key_details: Destroying... [id=a645a5f4391d63195156a451131ff35aea7f6f63]
+local_file.key_details: Destruction complete after 0s
+local_file.key_details: Creating...
+local_file.key_details: Creation complete after 0s [id=a645a5f4391d63195156a451131ff35aea7f6f63]
+
+Apply complete! Resources: 1 added, 0 changed, 1 destroyed.
+
+
+
+root in ~/terraform-projects/key-generator via 💠 default on ☁️  (us-east-1) took 3s 
+❯ terraform show
+# local_file.key_details:
+resource "local_file" "key_details" {
+    content              = (sensitive value)
+    content_base64sha256 = "/s2RLQMv8vJ6oPM/1VrP1N1QTURxJhFoeWnQldikyHk="
+    content_base64sha512 = "2sk38hujCjODffP+XYr2XBvCQXs2yhMnIB+0W/UTnF9Ji+drb41kvFjIZdFGHhM5jNMaOtGxX1TSwqPc4jc1rQ=="
+    content_md5          = "6217a6fbd0fb9670d6c97022aa96b216"
+    content_sha1         = "a645a5f4391d63195156a451131ff35aea7f6f63"
+    content_sha256       = "fecd912d032ff2f27aa0f33fd55acfd4dd504d44712611687969d095d8a4c879"
+    content_sha512       = "dac937f21ba30a33837df3fe5d8af65c1bc2417b36ca1327201fb45bf5139c5f498be76b6f8d64bc58c865d1461e13398cd31a3ad1b15f54d2c2a3dce23735ad"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/key.txt"
+    id                   = "a645a5f4391d63195156a451131ff35aea7f6f63"
+}
+
+# tls_private_key.pvtkey:
+resource "tls_private_key" "pvtkey" {
+    algorithm                     = "RSA"
+    ecdsa_curve                   = "P224"
+    id                            = "0fe45a7094b931d7a37a392f0d6afc2e29554ab7"
+    private_key_openssh           = (sensitive value)
+    private_key_pem               = (sensitive value)
+    private_key_pem_pkcs8         = (sensitive value)
+    public_key_fingerprint_md5    = "75:7e:e9:49:9d:21:4d:85:f3:19:75:60:b7:69:62:81"
+    public_key_fingerprint_sha256 = "SHA256:DtkK5i7D0dpKcBNkE/n4J7j3xN5OUCjCqiRnTpIYhzo"
+    public_key_openssh            = <<-EOT
+        ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC9Lut6s8YqjQ9QjZ/l0WIhUXS85dY0XlQ2lV8/QZU26rv6lZYUmo31QZr+p6bIcOP0ZlduxHZC1Hmw9A0Kzcj0b1XUEWp4spKmdD7TTq1sa++/MuCUdWgDSFCM3p5l2yogmpOrDGb1exD2mxsTQ7UVYh9BRrYP2UCp8a38a94Qi5/2mUI0iKw0aeBalgSuXJJsuu26+Egko4CR1dPdRhizLXHa/NZBWOmCKLr+7LWF0P8YIfMTvGEIHWibUEFa7aH0O4q0GKlozlc2Rmgix/jwOl+0qaQRrptEmzBHl5rWsRqu2nPxvBvl4WINuIAfQW/E9/RA7J/MkYCVCcLPbAswzUFhIFca417qtIyjjf1E0+GOFqg8WLhfWbzm0L3scy78OCNGwnpiDanMr/1BNGpd0A4o9MP98VzmeDe5Nkm/NAnBe8bZdjaH/Y3xSn2qajePE8K9gL2rXFG0DH/NheDUC+jyRw2VVk+7Nq9rviu38cFXNxlvHXIpN0c+fFHQJ3lLrH8un1nSUBL/F85rusqbPyVh7HtuXMhrJDicZFKgZIxON+2h1ouV2m4bNbkCHMFdvtaMApSz3nqSrfKAVWXEFmGJT5eYShZn0vaR5G3ngS2EMwh0X+dRF92FONVXvWC3AsL9zX+mzgXvPJ+4UBZXZ5Fb1J/bucnMVRkI6gdZpQ==
+    EOT
+    public_key_pem                = <<-EOT
+        -----BEGIN PUBLIC KEY-----
+        MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvS7rerPGKo0PUI2f5dFi
+        IVF0vOXWNF5UNpVfP0GVNuq7+pWWFJqN9UGa/qemyHDj9GZXbsR2QtR5sPQNCs3I
+        9G9V1BFqeLKSpnQ+006tbGvvvzLglHVoA0hQjN6eZdsqIJqTqwxm9XsQ9psbE0O1
+        FWIfQUa2D9lAqfGt/GveEIuf9plCNIisNGngWpYErlySbLrtuvhIJKOAkdXT3UYY
+        sy1x2vzWQVjpgii6/uy1hdD/GCHzE7xhCB1om1BBWu2h9DuKtBipaM5XNkZoIsf4
+        8DpftKmkEa6bRJswR5ea1rEartpz8bwb5eFiDbiAH0FvxPf0QOyfzJGAlQnCz2wL
+        MM1BYSBXGuNe6rSMo439RNPhjhaoPFi4X1m85tC97HMu/DgjRsJ6Yg2pzK/9QTRq
+        XdAOKPTD/fFc5ng3uTZJvzQJwXvG2XY2h/2N8Up9qmo3jxPCvYC9q1xRtAx/zYXg
+        1Avo8kcNlVZPuzava74rt/HBVzcZbx1yKTdHPnxR0Cd5S6x/Lp9Z0lAS/xfOa7rK
+        mz8lYex7blzIayQ4nGRSoGSMTjftodaLldpuGzW5AhzBXb7WjAKUs956kq3ygFVl
+        xBZhiU+XmEoWZ9L2keRt54EthDMIdF/nURfdhTjVV71gtwLC/c1/ps4F7zyfuFAW
+        V2eRW9Sf27nJzFUZCOoHWaUCAwEAAQ==
+        -----END PUBLIC KEY-----
+    EOT
+    rsa_bits                      = 4096
+}
+
+root in ~/terraform-projects/key-generator via 💠 default on ☁️  (us-east-1) 
+❯ cd 
+
+root in ~ on ☁️  (us-east-1) 
+❯ ll
+total 176
+drwx------ 1 root root   4096 Jul 21 10:55 ./
+drwxr-xr-x 1 root root 118784 Jul 21 10:55 ../
+drwxr-xr-x 2 root root   4096 Oct 23  2024 .aws/
+-rw-r--r-- 1 root root   3406 Oct 23  2024 .bashrc
+drwxr-xr-x 1 root root   4096 Jul 21 10:40 .cache/
+drwxr-xr-x 1 root root   4096 Oct 23  2024 .config/
+-rwxr-xr-x 1 root root   3243 Jul 21 10:55 key.txt*
+drwxr-xr-x 1 root root   4096 Oct 23  2024 .local/
+-rw-r--r-- 1 root root    161 Jul  9  2019 .profile
+-rw-r--r-- 1 root root    339 Jul 21 10:16 README.md
+drwxr-xr-x 1 root root   4096 Jul 21 10:41 .terminal_logs/
+drwxr-xr-x 2 root root   4096 Jul 21 10:44 .terraform.d/
+drwxr-xr-x 4 root root   4096 Jul 21 10:40 terraform-projects/
+
+root in ~ on ☁️  (us-east-1) 
+❯ cat key.txt 
+-----BEGIN RSA PRIVATE KEY-----
+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
+-----END RSA PRIVATE KEY-----
+
+
+
+
+
+
+❯ cd key-generator/
+
+root in ~/terraform-projects/key-generator via 💠 default on ☁️  (us-east-1) 
+❯ terraform destroy
+tls_private_key.pvtkey: Refreshing state... [id=0fe45a7094b931d7a37a392f0d6afc2e29554ab7]
+local_file.key_details: Refreshing state... [id=a645a5f4391d63195156a451131ff35aea7f6f63]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # local_file.key_details will be destroyed
+  - resource "local_file" "key_details" {
+      - content              = (sensitive value) -> null
+      - content_base64sha256 = "/s2RLQMv8vJ6oPM/1VrP1N1QTURxJhFoeWnQldikyHk=" -> null
+      - content_base64sha512 = "2sk38hujCjODffP+XYr2XBvCQXs2yhMnIB+0W/UTnF9Ji+drb41kvFjIZdFGHhM5jNMaOtGxX1TSwqPc4jc1rQ==" -> null
+      - content_md5          = "6217a6fbd0fb9670d6c97022aa96b216" -> null
+      - content_sha1         = "a645a5f4391d63195156a451131ff35aea7f6f63" -> null
+      - content_sha256       = "fecd912d032ff2f27aa0f33fd55acfd4dd504d44712611687969d095d8a4c879" -> null
+      - content_sha512       = "dac937f21ba30a33837df3fe5d8af65c1bc2417b36ca1327201fb45bf5139c5f498be76b6f8d64bc58c865d1461e13398cd31a3ad1b15f54d2c2a3dce23735ad" -> null
+      - directory_permission = "0777" -> null
+      - file_permission      = "0777" -> null
+      - filename             = "/root/key.txt" -> null
+      - id                   = "a645a5f4391d63195156a451131ff35aea7f6f63" -> null
+    }
+
+  # tls_private_key.pvtkey will be destroyed
+  - resource "tls_private_key" "pvtkey" {
+      - algorithm                     = "RSA" -> null
+      - ecdsa_curve                   = "P224" -> null
+      - id                            = "0fe45a7094b931d7a37a392f0d6afc2e29554ab7" -> null
+      - private_key_openssh           = (sensitive value) -> null
+      - private_key_pem               = (sensitive value) -> null
+      - private_key_pem_pkcs8         = (sensitive value) -> null
+      - public_key_fingerprint_md5    = "75:7e:e9:49:9d:21:4d:85:f3:19:75:60:b7:69:62:81" -> null
+      - public_key_fingerprint_sha256 = "SHA256:DtkK5i7D0dpKcBNkE/n4J7j3xN5OUCjCqiRnTpIYhzo" -> null
+      - public_key_openssh            = <<-EOT
+            ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC9Lut6s8YqjQ9QjZ/l0WIhUXS85dY0XlQ2lV8/QZU26rv6lZYUmo31QZr+p6bIcOP0ZlduxHZC1Hmw9A0Kzcj0b1XUEWp4spKmdD7TTq1sa++/MuCUdWgDSFCM3p5l2yogmpOrDGb1exD2mxsTQ7UVYh9BRrYP2UCp8a38a94Qi5/2mUI0iKw0aeBalgSuXJJsuu26+Egko4CR1dPdRhizLXHa/NZBWOmCKLr+7LWF0P8YIfMTvGEIHWibUEFa7aH0O4q0GKlozlc2Rmgix/jwOl+0qaQRrptEmzBHl5rWsRqu2nPxvBvl4WINuIAfQW/E9/RA7J/MkYCVCcLPbAswzUFhIFca417qtIyjjf1E0+GOFqg8WLhfWbzm0L3scy78OCNGwnpiDanMr/1BNGpd0A4o9MP98VzmeDe5Nkm/NAnBe8bZdjaH/Y3xSn2qajePE8K9gL2rXFG0DH/NheDUC+jyRw2VVk+7Nq9rviu38cFXNxlvHXIpN0c+fFHQJ3lLrH8un1nSUBL/F85rusqbPyVh7HtuXMhrJDicZFKgZIxON+2h1ouV2m4bNbkCHMFdvtaMApSz3nqSrfKAVWXEFmGJT5eYShZn0vaR5G3ngS2EMwh0X+dRF92FONVXvWC3AsL9zX+mzgXvPJ+4UBZXZ5Fb1J/bucnMVRkI6gdZpQ==
+        EOT -> null
+      - public_key_pem                = <<-EOT
+            -----BEGIN PUBLIC KEY-----
+            MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvS7rerPGKo0PUI2f5dFi
+            IVF0vOXWNF5UNpVfP0GVNuq7+pWWFJqN9UGa/qemyHDj9GZXbsR2QtR5sPQNCs3I
+            9G9V1BFqeLKSpnQ+006tbGvvvzLglHVoA0hQjN6eZdsqIJqTqwxm9XsQ9psbE0O1
+            FWIfQUa2D9lAqfGt/GveEIuf9plCNIisNGngWpYErlySbLrtuvhIJKOAkdXT3UYY
+            sy1x2vzWQVjpgii6/uy1hdD/GCHzE7xhCB1om1BBWu2h9DuKtBipaM5XNkZoIsf4
+            8DpftKmkEa6bRJswR5ea1rEartpz8bwb5eFiDbiAH0FvxPf0QOyfzJGAlQnCz2wL
+            MM1BYSBXGuNe6rSMo439RNPhjhaoPFi4X1m85tC97HMu/DgjRsJ6Yg2pzK/9QTRq
+            XdAOKPTD/fFc5ng3uTZJvzQJwXvG2XY2h/2N8Up9qmo3jxPCvYC9q1xRtAx/zYXg
+            1Avo8kcNlVZPuzava74rt/HBVzcZbx1yKTdHPnxR0Cd5S6x/Lp9Z0lAS/xfOa7rK
+            mz8lYex7blzIayQ4nGRSoGSMTjftodaLldpuGzW5AhzBXb7WjAKUs956kq3ygFVl
+            xBZhiU+XmEoWZ9L2keRt54EthDMIdF/nURfdhTjVV71gtwLC/c1/ps4F7zyfuFAW
+            V2eRW9Sf27nJzFUZCOoHWaUCAwEAAQ==
+            -----END PUBLIC KEY-----
+        EOT -> null
+      - rsa_bits                      = 4096 -> null
+    }
+
+Plan: 0 to add, 0 to change, 2 to destroy.
+
+Do you really want to destroy all resources?
+  Terraform will destroy all your managed infrastructure, as shown above.
+  There is no undo. Only 'yes' will be accepted to confirm.
+
+  Enter a value: yes
+
+local_file.key_details: Destroying... [id=a645a5f4391d63195156a451131ff35aea7f6f63]
+local_file.key_details: Destruction complete after 0s
+tls_private_key.pvtkey: Destroying... [id=0fe45a7094b931d7a37a392f0d6afc2e29554ab7]
+tls_private_key.pvtkey: Destruction complete after 0s
+
+Destroy complete! Resources: 2 destroyed.
+
+root in ~/terraform-projects/key-generator via 💠 default on ☁️  (us-east-1) took 2s 
+❯ ll
+total 48
+drwxr-xr-x 4 root root  4096 Jul 21 10:57 ./
+drwxr-xr-x 4 root root  4096 Jul 21 10:40 ../
+-rw-r--r-- 1 root root   197 Jul 21 10:54 key.tf
+drwxr-xr-x 2 root root  4096 Jul 21 10:55 root/
+drwxr-xr-x 3 root root  4096 Jul 21 10:44 .terraform/
+-rw-r--r-- 1 root root  2197 Jul 21 10:53 .terraform.lock.hcl
+-rw-r--r-- 1 root root   181 Jul 21 10:57 terraform.tfstate
+-rw-r--r-- 1 root root 17373 Jul 21 10:57 terraform.tfstate.backup
+
+
+
+
+root in ~/terraform-projects/explicit-dependency via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "whale" {
+  filename = "/root/whale"
+  content = "whale"
+  depends_on = [local_file.krill]
+}
+
+resource "local_file" "krill" {
+  filename = "/root/krill"
+  content = "krill"
+}
+root in ~/terraform-projects/explicit-dependency via 💠 default on ☁️  (us-east-1) 
+❯ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding latest version of hashicorp/local...
+- Installing hashicorp/local v2.5.3...
+- Installed hashicorp/local v2.5.3 (signed by HashiCorp)
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+
+
+
+
+
+root in ~/terraform-projects/explicit-dependency via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.krill will be created
+  + resource "local_file" "krill" {
+      + content              = "krill"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/krill"
+      + id                   = (known after apply)
+    }
+
+  # local_file.whale will be created
+  + resource "local_file" "whale" {
+      + content              = "whale"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/whale"
+      + id                   = (known after apply)
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply"
+now.
+
+
+
+
+
+root in ~/terraform-projects/explicit-dependency via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.krill will be created
+  + resource "local_file" "krill" {
+      + content              = "krill"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/krill"
+      + id                   = (known after apply)
+    }
+
+  # local_file.whale will be created
+  + resource "local_file" "whale" {
+      + content              = "whale"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/whale"
+      + id                   = (known after apply)
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+local_file.krill: Creating...
+local_file.krill: Creation complete after 0s [id=893a03dee4098efabc1d4a97a2fd6cc568ff731c]
+local_file.whale: Creating...
+local_file.whale: Creation complete after 0s [id=1769e230f7885e9153bb0e4fe515ee1d08fdab0b]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+
+
+
+root in ~/terraform-projects/explicit-dependency via 💠 default on ☁️  (us-east-1) 
+❯ terraform show
+# local_file.krill:
+resource "local_file" "krill" {
+    content              = "krill"
+    content_base64sha256 = "Dmtp+9GDa70nRYcWS9veAiGQGXTsSt5Afkv0w1cnPu0="
+    content_base64sha512 = "pnc90Hds4C8R6bxqRS1u/KyYsuPb4HTeK3ZogeV/Wg5xJW/2/1+Z6TBTYGdocQZ59bCeQnBiKMD6DopmiMd8Fw=="
+    content_md5          = "402c53ab08aeb2915387d8bccd08a18d"
+    content_sha1         = "893a03dee4098efabc1d4a97a2fd6cc568ff731c"
+    content_sha256       = "0e6b69fbd1836bbd274587164bdbde0221901974ec4ade407e4bf4c357273eed"
+    content_sha512       = "a6773dd0776ce02f11e9bc6a452d6efcac98b2e3dbe074de2b766881e57f5a0e71256ff6ff5f99e93053606768710679f5b09e42706228c0fa0e8a6688c77c17"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/krill"
+    id                   = "893a03dee4098efabc1d4a97a2fd6cc568ff731c"
+}
+
+# local_file.whale:
+resource "local_file" "whale" {
+    content              = "whale"
+    content_base64sha256 = "pdKuKG0NnkXAYhpvx8GBGZQN1ze6qNeU5q81fSE2p6E="
+    content_base64sha512 = "3sywds7/llJfgZqzJisgWwxdKuoZC7VyP1Xe4IvBYjbVHkxeVd+Yc6xpNRPjfa5mehJrZ6+sZGFDnIxxkTGHyw=="
+    content_md5          = "1ebfd5913ef450b92b9e65b6de09acad"
+    content_sha1         = "1769e230f7885e9153bb0e4fe515ee1d08fdab0b"
+    content_sha256       = "a5d2ae286d0d9e45c0621a6fc7c18119940dd737baa8d794e6af357d2136a7a1"
+    content_sha512       = "deccb076ceff96525f819ab3262b205b0c5d2aea190bb5723f55dee08bc16236d51e4c5e55df9873ac693513e37dae667a126b67afac6461439c8c71913187cb"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/whale"
+    id                   = "1769e230f7885e9153bb0e4fe515ee1d08fdab0b"
+}
+
+
+
+
+
+root in ~/terraform-projects/explicit-dependency via 💠 default on ☁️  (us-east-1) 
+❯ cd 
+
+root in ~ on ☁️  (us-east-1) 
+❯ ll
+total 244
+drwx------ 1 root root   4096 Jul 21 11:05 ./
+drwxr-xr-x 1 root root 180224 Jul 21 11:05 ../
+drwxr-xr-x 2 root root   4096 Oct 23  2024 .aws/
+-rw-r--r-- 1 root root   3406 Oct 23  2024 .bashrc
+drwxr-xr-x 1 root root   4096 Jul 21 10:40 .cache/
+drwxr-xr-x 1 root root   4096 Oct 23  2024 .config/
+-rwxr-xr-x 1 root root      5 Jul 21 11:05 krill*
+drwxr-xr-x 1 root root   4096 Oct 23  2024 .local/
+-rw-r--r-- 1 root root    161 Jul  9  2019 .profile
+-rw-r--r-- 1 root root    339 Jul 21 10:16 README.md
+drwxr-xr-x 1 root root   4096 Jul 21 10:41 .terminal_logs/
+drwxr-xr-x 2 root root   4096 Jul 21 10:44 .terraform.d/
+drwxr-xr-x 4 root root   4096 Jul 21 10:40 terraform-projects/
+-rw-r--r-- 1 root root    180 Jul 21 10:57 terraform.tfstate
+-rwxr-xr-x 1 root root      5 Jul 21 11:05 whale*
+
+root in ~ on ☁️  (us-east-1) 
+❯ cat krill 
+krill
+root in ~ on ☁️  (us-east-1) 
+❯ cat whale 
+whale
+root in ~ on ☁️  (us-east-1) 
+❯ 
+
+
