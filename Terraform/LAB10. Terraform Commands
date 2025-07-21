@@ -1,0 +1,389 @@
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ ll
+total 20
+drwxr-xr-x 3 root root 4096 Jul 21 12:29 ./
+drwxr-xr-x 5 root root 4096 Jul 21 12:27 ../
+-rw-r--r-- 1 root root  510 Jul 21 10:16 main.tf
+drwxr-xr-x 3 root root 4096 Jul 21 12:29 .terraform/
+-rw-r--r-- 1 root root 2197 Jul 21 12:29 .terraform.lock.hcl
+
+
+
+root in ~/terraform-projects/provider via 💠 default on ☁️  (us-east-1) 
+❯ terraform providers
+
+Providers required by configuration:
+.
+├── provider[registry.terraform.io/hashicorp/aws] 4.15.0
+└── provider[registry.terraform.io/hashicorp/local]
+
+
+
+
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "key_data" {
+        filename       = "/tmp/.pki/private_key.pem"
+        content = tls_private_key.private_key.private_key_pem
+        file_permission =  "0400"
+}
+resource "tls_private_key" "private_key" {
+  algorithm   = "RSA"
+  dsa_bits  = 0485
+}
+resource "tls_cert_request" "csr" {
+  private_key_pem = tls_private_key.private_key.private_key_pem
+  depends_on = [ local_file.key_data ]
+
+  subject {
+    common_name  = "flexit.com"
+    organization = "FlexIT Consulting Services"
+  }
+}
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ terraform validate 
+╷
+│ Error: Unsupported argument
+│ 
+│   on main.tf line 8, in resource "tls_private_key" "private_key":
+│    8:   dsa_bits  = 0485
+│ 
+│ An argument named "dsa_bits" is not expected here. Did you mean "rsa_bits"?
+╵
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+
+
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "key_data" {
+        filename       = "/tmp/.pki/private_key.pem"
+        content = tls_private_key.private_key.private_key_pem
+        file_permission =  "0400"
+}
+resource "tls_private_key" "private_key" {
+  algorithm   = "RSA"
+  rsa_bits  = 0485
+}
+resource "tls_cert_request" "csr" {
+  private_key_pem = tls_private_key.private_key.private_key_pem
+  depends_on = [ local_file.key_data ]
+
+  subject {
+    common_name  = "flexit.com"
+    organization = "FlexIT Consulting Services"
+  }
+}
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ terraform validate 
+Success! The configuration is valid.
+
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+
+
+
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "key_data" {
+        filename       = "/tmp/.pki/private_key.pem"
+        content = tls_private_key.private_key.private_key_pem
+        file_permission =  "0400"
+}
+resource "tls_private_key" "private_key" {
+  algorithm   = "RSA"
+  rsa_bits  = 2048
+}
+resource "tls_cert_request" "csr" {
+  private_key_pem = tls_private_key.private_key.private_key_pem
+  depends_on = [ local_file.key_data ]
+
+  subject {
+    common_name  = "flexit.com"
+    organization = "FlexIT Consulting Services"
+  }
+}
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+tls_private_key.private_key: Refreshing state... [id=f54524b524626b68b7b8d49244893a8524070be9]
+local_file.key_data: Refreshing state... [id=a3b255f204a017a7ad7d97eaad79eb8c5675f8d2]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # local_file.key_data must be replaced
+-/+ resource "local_file" "key_data" {
+      ~ content              = (sensitive value) # forces replacement
+      ~ content_base64sha256 = "xmDmP+cAG47DcyMbq9KdM2FQAAGmDBUbV6kjJj4qs14=" -> (known after apply)
+      ~ content_base64sha512 = "m2u+T6BN67wCKz0bqQxnPho0KRwQN++NpE4RfdbZtYhAKJ5kbMrtM5K761AYaD5jHe0TKHjRHoK12Hbj8fmGXQ==" -> (known after apply)
+      ~ content_md5          = "dd9c1d30a3488433958d608ced8edc52" -> (known after apply)
+      ~ content_sha1         = "a3b255f204a017a7ad7d97eaad79eb8c5675f8d2" -> (known after apply)
+      ~ content_sha256       = "c660e63fe7001b8ec373231babd29d3361500001a60c151b57a923263e2ab35e" -> (known after apply)
+      ~ content_sha512       = "9b6bbe4fa04debbc022b3d1ba90c673e1a34291c1037ef8da44e117dd6d9b58840289e646ccaed3392bbeb5018683e631ded132878d11e82b5d876e3f1f9865d" -> (known after apply)
+      ~ id                   = "a3b255f204a017a7ad7d97eaad79eb8c5675f8d2" -> (known after apply)
+        # (3 unchanged attributes hidden)
+    }
+
+  # tls_cert_request.csr will be created
+  + resource "tls_cert_request" "csr" {
+      + cert_request_pem = (known after apply)
+      + id               = (known after apply)
+      + key_algorithm    = (known after apply)
+      + private_key_pem  = (sensitive value)
+
+      + subject {
+          + common_name  = "flexit.com"
+          + organization = "FlexIT Consulting Services"
+        }
+    }
+
+  # tls_private_key.private_key must be replaced
+-/+ resource "tls_private_key" "private_key" {
+      ~ id                            = "f54524b524626b68b7b8d49244893a8524070be9" -> (known after apply)
+      ~ private_key_openssh           = (sensitive value)
+      ~ private_key_pem               = (sensitive value)
+      ~ private_key_pem_pkcs8         = (sensitive value)
+      ~ public_key_fingerprint_md5    = "4f:56:55:62:4a:9c:85:67:28:c7:10:58:67:7f:28:24" -> (known after apply)
+      ~ public_key_fingerprint_sha256 = "SHA256:R0oQhLgvfQrLlJqziWkz184ad+XLvXvGYGZwlEIO2xM" -> (known after apply)
+      ~ public_key_openssh            = <<-EOT
+            ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAPRj/6l4BWyYrw554ehBedWcONG/t70XxXjcGoWqZmScRc7wWinl3HVt3M6VL67kj9yjMZbvIJRdUoSCRDls=
+        EOT -> (known after apply)
+      ~ public_key_pem                = <<-EOT
+            -----BEGIN PUBLIC KEY-----
+            MFgwDQYJKoZIhvcNAQEBBQADRwAwRAI9GP/qXgFbJivDnnh6EF51Zw40b+3vRfFe
+            NwahapmZJxFzvBaKeXcdW3czpUvruSP3KMxlu8glF1ShIJEOWwIDAQAB
+            -----END PUBLIC KEY-----
+        EOT -> (known after apply)
+      ~ rsa_bits                      = 485 -> 2048 # forces replacement
+        # (2 unchanged attributes hidden)
+    }
+
+Plan: 3 to add, 0 to change, 2 to destroy.
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+tls_private_key.private_key: Refreshing state... [id=f54524b524626b68b7b8d49244893a8524070be9]
+local_file.key_data: Refreshing state... [id=a3b255f204a017a7ad7d97eaad79eb8c5675f8d2]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # local_file.key_data must be replaced
+-/+ resource "local_file" "key_data" {
+      ~ content              = (sensitive value) # forces replacement
+      ~ content_base64sha256 = "xmDmP+cAG47DcyMbq9KdM2FQAAGmDBUbV6kjJj4qs14=" -> (known after apply)
+      ~ content_base64sha512 = "m2u+T6BN67wCKz0bqQxnPho0KRwQN++NpE4RfdbZtYhAKJ5kbMrtM5K761AYaD5jHe0TKHjRHoK12Hbj8fmGXQ==" -> (known after apply)
+      ~ content_md5          = "dd9c1d30a3488433958d608ced8edc52" -> (known after apply)
+      ~ content_sha1         = "a3b255f204a017a7ad7d97eaad79eb8c5675f8d2" -> (known after apply)
+      ~ content_sha256       = "c660e63fe7001b8ec373231babd29d3361500001a60c151b57a923263e2ab35e" -> (known after apply)
+      ~ content_sha512       = "9b6bbe4fa04debbc022b3d1ba90c673e1a34291c1037ef8da44e117dd6d9b58840289e646ccaed3392bbeb5018683e631ded132878d11e82b5d876e3f1f9865d" -> (known after apply)
+      ~ id                   = "a3b255f204a017a7ad7d97eaad79eb8c5675f8d2" -> (known after apply)
+        # (3 unchanged attributes hidden)
+    }
+
+  # tls_cert_request.csr will be created
+  + resource "tls_cert_request" "csr" {
+      + cert_request_pem = (known after apply)
+      + id               = (known after apply)
+      + key_algorithm    = (known after apply)
+      + private_key_pem  = (sensitive value)
+
+      + subject {
+          + common_name  = "flexit.com"
+          + organization = "FlexIT Consulting Services"
+        }
+    }
+
+  # tls_private_key.private_key must be replaced
+-/+ resource "tls_private_key" "private_key" {
+      ~ id                            = "f54524b524626b68b7b8d49244893a8524070be9" -> (known after apply)
+      ~ private_key_openssh           = (sensitive value)
+      ~ private_key_pem               = (sensitive value)
+      ~ private_key_pem_pkcs8         = (sensitive value)
+      ~ public_key_fingerprint_md5    = "4f:56:55:62:4a:9c:85:67:28:c7:10:58:67:7f:28:24" -> (known after apply)
+      ~ public_key_fingerprint_sha256 = "SHA256:R0oQhLgvfQrLlJqziWkz184ad+XLvXvGYGZwlEIO2xM" -> (known after apply)
+      ~ public_key_openssh            = <<-EOT
+            ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAPRj/6l4BWyYrw554ehBedWcONG/t70XxXjcGoWqZmScRc7wWinl3HVt3M6VL67kj9yjMZbvIJRdUoSCRDls=
+        EOT -> (known after apply)
+      ~ public_key_pem                = <<-EOT
+            -----BEGIN PUBLIC KEY-----
+            MFgwDQYJKoZIhvcNAQEBBQADRwAwRAI9GP/qXgFbJivDnnh6EF51Zw40b+3vRfFe
+            NwahapmZJxFzvBaKeXcdW3czpUvruSP3KMxlu8glF1ShIJEOWwIDAQAB
+            -----END PUBLIC KEY-----
+        EOT -> (known after apply)
+      ~ rsa_bits                      = 485 -> 2048 # forces replacement
+        # (2 unchanged attributes hidden)
+    }
+
+Plan: 3 to add, 0 to change, 2 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+local_file.key_data: Destroying... [id=a3b255f204a017a7ad7d97eaad79eb8c5675f8d2]
+local_file.key_data: Destruction complete after 0s
+tls_private_key.private_key: Destroying... [id=f54524b524626b68b7b8d49244893a8524070be9]
+tls_private_key.private_key: Destruction complete after 0s
+tls_private_key.private_key: Creating...
+tls_private_key.private_key: Creation complete after 1s [id=9d6223f2f76fd647b4c447b9021acc6efd7ff990]
+local_file.key_data: Creating...
+local_file.key_data: Creation complete after 0s [id=94b07f0230a05d0916df778798d9a7d30dec1059]
+tls_cert_request.csr: Creating...
+tls_cert_request.csr: Creation complete after 0s [id=4fcfead2641345ff9edd6087413ee360be79df05]
+
+Apply complete! Resources: 3 added, 0 changed, 2 destroyed.
+
+
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) took 3s 
+❯ terraform show
+# local_file.key_data:
+resource "local_file" "key_data" {
+    content              = (sensitive value)
+    content_base64sha256 = "Ywx6MEucbrdVAcKCVI6sYhYm0FxbxSNcgcTpcYRxN8M="
+    content_base64sha512 = "i+sP9x0UAu/NLDLsQ95Uy4ZHuRpfGcdiEC4JI1oACuGAul3HQ0nB1S8gUobdlJBHiIpJumDBgtl+1yvg6JuNmA=="
+    content_md5          = "7d35228c4a00d63fe281527909c79c30"
+    content_sha1         = "94b07f0230a05d0916df778798d9a7d30dec1059"
+    content_sha256       = "630c7a304b9c6eb75501c282548eac621626d05c5bc5235c81c4e971847137c3"
+    content_sha512       = "8beb0ff71d1402efcd2c32ec43de54cb8647b91a5f19c762102e09235a000ae180ba5dc74349c1d52f205286dd949047888a49ba60c182d97ed72be0e89b8d98"
+    directory_permission = "0777"
+    file_permission      = "0400"
+    filename             = "/tmp/.pki/private_key.pem"
+    id                   = "94b07f0230a05d0916df778798d9a7d30dec1059"
+}
+
+# tls_cert_request.csr:
+resource "tls_cert_request" "csr" {
+    cert_request_pem = <<-EOT
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIICfzCCAWcCAQAwOjEjMCEGA1UEChMaRmxleElUIENvbnN1bHRpbmcgU2Vydmlj
+        ZXMxEzARBgNVBAMTCmZsZXhpdC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+        ggEKAoIBAQDkyv/1ZI/DcMPn3S94gYBscBuwfE5ToGrtpgacajXlqzlKGyK2dUg3
+        OoaEcRIq2YyLs/HmeQr25JW3jSbMpmJwAc4n641v93ic8R7ubpK4LYBYcPwHM4XM
+        c6E5EnA51tBrI0pvsBw9yotc9ofspFG7perw9cjG4yNURcsp3E7Cj+bec71VYAEL
+        WJJtoSC++GhJWTRTgd36Hb8sdaC2AOp45np6l1nvXJtrrYl3oRvauUBWJIm6fesB
+        2qOkT2bsN5gQ0fdbqum2jCOVZ8hOIkX2WKG2O7HbVygaZ8ucCRabhq+Ag+ezb9P+
+        wTqsON5elpcb6mxIAXB5heJQp0lRohotAgMBAAGgADANBgkqhkiG9w0BAQsFAAOC
+        AQEAIid4+llGMk78C7S2sHQNh+VR2JOq9t75NdPrknvE+Fh2/qbmBnHrDZ8YlomE
+        r48asGZioF+8a1cAMP6jnCrIO/TKfpqKkskuhsfJe21I4UN4As5wPfXis4Og86um
+        4f24aB1+ZJRmwcxsGPG8Lytlw5nLAOBXIDeXFFjDa4n3dRVMZOsLH5FNtpJvq9+H
+        SolWlYgwmjgvzCNpadfE5bABA6cznopSuTeS6iffuHqKybwYpHWxkvLqIcqBhQjN
+        N9bASziuInRHAoHX2HVvm+Tq5aM4r49qH4XZI3r9UxR+aXM2jnvCEprRkXfomEvU
+        SL8KBjAG6cZ6p4fYoIzQ+frKsA==
+        -----END CERTIFICATE REQUEST-----
+    EOT
+    id               = "4fcfead2641345ff9edd6087413ee360be79df05"
+    key_algorithm    = "RSA"
+    private_key_pem  = (sensitive value)
+
+    subject {
+        common_name  = "flexit.com"
+        organization = "FlexIT Consulting Services"
+    }
+}
+
+# tls_private_key.private_key:
+resource "tls_private_key" "private_key" {
+    algorithm                     = "RSA"
+    ecdsa_curve                   = "P224"
+    id                            = "9d6223f2f76fd647b4c447b9021acc6efd7ff990"
+    private_key_openssh           = (sensitive value)
+    private_key_pem               = (sensitive value)
+    private_key_pem_pkcs8         = (sensitive value)
+    public_key_fingerprint_md5    = "78:56:97:12:1a:eb:11:1c:00:a9:1a:37:93:d5:2f:e0"
+    public_key_fingerprint_sha256 = "SHA256:JVxdSXy6JLMDxt4Vdfx4eHWpkU2PvZUTz2DequmE3SA"
+    public_key_openssh            = <<-EOT
+        ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDkyv/1ZI/DcMPn3S94gYBscBuwfE5ToGrtpgacajXlqzlKGyK2dUg3OoaEcRIq2YyLs/HmeQr25JW3jSbMpmJwAc4n641v93ic8R7ubpK4LYBYcPwHM4XMc6E5EnA51tBrI0pvsBw9yotc9ofspFG7perw9cjG4yNURcsp3E7Cj+bec71VYAELWJJtoSC++GhJWTRTgd36Hb8sdaC2AOp45np6l1nvXJtrrYl3oRvauUBWJIm6fesB2qOkT2bsN5gQ0fdbqum2jCOVZ8hOIkX2WKG2O7HbVygaZ8ucCRabhq+Ag+ezb9P+wTqsON5elpcb6mxIAXB5heJQp0lRohot
+    EOT
+    public_key_pem                = <<-EOT
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5Mr/9WSPw3DD590veIGA
+        bHAbsHxOU6Bq7aYGnGo15as5ShsitnVINzqGhHESKtmMi7Px5nkK9uSVt40mzKZi
+        cAHOJ+uNb/d4nPEe7m6SuC2AWHD8BzOFzHOhORJwOdbQayNKb7AcPcqLXPaH7KRR
+        u6Xq8PXIxuMjVEXLKdxOwo/m3nO9VWABC1iSbaEgvvhoSVk0U4Hd+h2/LHWgtgDq
+        eOZ6epdZ71yba62Jd6Eb2rlAViSJun3rAdqjpE9m7DeYENH3W6rptowjlWfITiJF
+        9lihtjux21coGmfLnAkWm4avgIPns2/T/sE6rDjeXpaXG+psSAFweYXiUKdJUaIa
+        LQIDAQAB
+        -----END PUBLIC KEY-----
+    EOT
+    rsa_bits                      = 2048
+}
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+
+
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "key_data" {
+  filename        = "/tmp/.pki/private_key.pem"
+  content         = tls_private_key.private_key.private_key_pem
+  file_permission = "0400"
+}
+resource "tls_private_key" "private_key" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+resource "tls_cert_request" "csr" {
+  private_key_pem = tls_private_key.private_key.private_key_pem
+  depends_on      = [local_file.key_data]
+
+  subject {
+    common_name  = "flexit.com"
+    organization = "FlexIT Consulting Services"
+  }
+}
+
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ terraform fmt 
+
+root in ~/terraform-projects/project-shazam via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "key_data" {
+  filename        = "/tmp/.pki/private_key.pem"
+  content         = tls_private_key.private_key.private_key_pem
+  file_permission = "0400"
+}
+resource "tls_private_key" "private_key" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+resource "tls_cert_request" "csr" {
+  private_key_pem = tls_private_key.private_key.private_key_pem
+  depends_on      = [local_file.key_data]
+
+  subject {
+    common_name  = "flexit.com"
+    organization = "FlexIT Consulting Services"
+  }
+}
+
