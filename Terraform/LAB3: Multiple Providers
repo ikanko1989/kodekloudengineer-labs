@@ -1,0 +1,353 @@
+root in ~/terraform-projects/MPL via 💠 default on ☁️  (us-east-1) 
+❯ cat pet-name.tf 
+resource "local_file" "my-pet" {
+    filename = "/root/pet-name"
+    content = "My pet is called finnegan!!"
+}
+
+resource "random_pet" "other-pet" {
+  length = 1
+  prefix = "Mr"
+  separator = "."
+}
+
+
+
+
+root in ~/terraform-projects/MPL via 💠 default on ☁️  (us-east-1) 
+❯ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding latest version of hashicorp/random...
+- Finding latest version of hashicorp/local...
+- Installing hashicorp/random v3.7.2...
+- Installed hashicorp/random v3.7.2 (signed by HashiCorp)
+- Installing hashicorp/local v2.5.3...
+- Installed hashicorp/local v2.5.3 (signed by HashiCorp)
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+root in ~/terraform-projects/MPL via 💠 default on ☁️  (us-east-1) 
+❯ ll
+total 20
+drwxr-xr-x 3 root root 4096 Jul 21 08:48 ./
+drwxr-xr-x 6 root root 4096 Jul 21 08:30 ../
+-rw-r--r-- 1 root root  196 Jul 21 08:48 pet-name.tf
+drwxr-xr-x 3 root root 4096 Jul 21 08:48 .terraform/
+-rw-r--r-- 1 root root 2200 Jul 21 08:48 .terraform.lock.hcl
+
+root in ~/terraform-projects/MPL via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.my-pet will be created
+  + resource "local_file" "my-pet" {
+      + content              = "My pet is called finnegan!!"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/pet-name"
+      + id                   = (known after apply)
+    }
+
+  # random_pet.other-pet will be created
+  + resource "random_pet" "other-pet" {
+      + id        = (known after apply)
+      + length    = 1
+      + prefix    = "Mr"
+      + separator = "."
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+root in ~/terraform-projects/MPL via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.my-pet will be created
+  + resource "local_file" "my-pet" {
+      + content              = "My pet is called finnegan!!"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/pet-name"
+      + id                   = (known after apply)
+    }
+
+  # random_pet.other-pet will be created
+  + resource "random_pet" "other-pet" {
+      + id        = (known after apply)
+      + length    = 1
+      + prefix    = "Mr"
+      + separator = "."
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+random_pet.other-pet: Creating...
+random_pet.other-pet: Creation complete after 0s [id=Mr.elf]
+local_file.my-pet: Creating...
+local_file.my-pet: Creation complete after 0s [id=9874dce72f896b8152fd9d41d11d44fae6c4127f]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+
+
+
+
+root in ~/terraform-projects/MPL via 💠 default on ☁️  (us-east-1) 
+❯ ll
+total 24
+drwxr-xr-x 3 root root 4096 Jul 21 08:48 ./
+drwxr-xr-x 6 root root 4096 Jul 21 08:30 ../
+-rw-r--r-- 1 root root  196 Jul 21 08:48 pet-name.tf
+drwxr-xr-x 3 root root 4096 Jul 21 08:48 .terraform/
+-rw-r--r-- 1 root root 2200 Jul 21 08:48 .terraform.lock.hcl
+-rw-r--r-- 1 root root 1913 Jul 21 08:48 terraform.tfstate
+
+
+root in ~ on ☁️  (us-east-1) 
+❯ ll
+total 176
+drwx------ 1 root root   4096 Jul 21 08:48 ./
+drwxr-xr-x 1 root root 118784 Jul 21 08:50 ../
+drwxr-xr-x 2 root root   4096 Oct 23  2024 .aws/
+-rw-r--r-- 1 root root   3406 Oct 23  2024 .bashrc
+drwxr-xr-x 1 root root   4096 Jul 21 08:31 .cache/
+drwxr-xr-x 1 root root   4096 Oct 23  2024 .config/
+drwxr-xr-x 1 root root   4096 Oct 23  2024 .local/
+-rwxr-xr-x 1 root root     27 Jul 21 08:48 pet-name*
+-rw-r--r-- 1 root root    161 Jul  9  2019 .profile
+-rw-r--r-- 1 root root    339 Jul  2 10:28 README.md
+drwxr-xr-x 1 root root   4096 Jul 21 08:31 .terminal_logs/
+drwxr-xr-x 2 root root   4096 Jul 21 08:35 .terraform.d/
+drwxr-xr-x 6 root root   4096 Jul 21 08:30 terraform-projects/
+
+root in ~ on ☁️  (us-east-1) 
+❯ cat pet-name 
+My pet is called finnegan!!
+❯ 
+
+
+root in ~/terraform-projects/MPL via 💠 default on ☁️  (us-east-1) 
+❯ terraform show
+# local_file.my-pet:
+resource "local_file" "my-pet" {
+    content              = "My pet is called finnegan!!"
+    content_base64sha256 = "qcmnHQ3ZJ4cTbLgB0tYKSz1kaS48QyZmR7X7rMWHB7A="
+    content_base64sha512 = "h96cOyx6t2wZv17Iy1OLXRhBoG18t/MNguwxAG8JQGPZ75e+7EaH0CdzxnZrdRhfot9oIEBlic9V67zj/OvRMw=="
+    content_md5          = "5375b7b20ef608465397f4b557d500ba"
+    content_sha1         = "9874dce72f896b8152fd9d41d11d44fae6c4127f"
+    content_sha256       = "a9c9a71d0dd92787136cb801d2d60a4b3d64692e3c43266647b5fbacc58707b0"
+    content_sha512       = "87de9c3b2c7ab76c19bf5ec8cb538b5d1841a06d7cb7f30d82ec31006f094063d9ef97beec4687d02773c6766b75185fa2df6820406589cf55ebbce3fcebd133"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/pet-name"
+    id                   = "9874dce72f896b8152fd9d41d11d44fae6c4127f"
+}
+
+# random_pet.other-pet:
+resource "random_pet" "other-pet" {
+    id        = "Mr.elf"
+    length    = 1
+    prefix    = "Mr"
+    separator = "."
+}
+
+
+
+
+
+root in ~/terraform-projects/provider-a via 💠 default on ☁️  (us-east-1) 
+❯ cat code.tf 
+resource "local_file" "iac_code" {
+          filename = "/opt/practice"
+          content = "Setting up infrastructure as code"
+}
+
+
+resource "random_string" "iac_random" {
+  length = 10
+  min_upper = 5
+}
+
+root in ~/terraform-projects/provider-a via 💠 default on ☁️  (us-east-1) 
+❯ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Reusing previous version of hashicorp/local from the dependency lock file
+- Reusing previous version of hashicorp/random from the dependency lock file
+- Using previously-installed hashicorp/local v2.5.3
+- Using previously-installed hashicorp/random v3.7.2
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+
+
+
+root in ~/terraform-projects/provider-a via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.iac_code will be created
+  + resource "local_file" "iac_code" {
+      + content              = "Setting up infrastructure as code"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/opt/practice"
+      + id                   = (known after apply)
+    }
+
+  # random_string.iac_random will be created
+  + resource "random_string" "iac_random" {
+      + id          = (known after apply)
+      + length      = 10
+      + lower       = true
+      + min_lower   = 0
+      + min_numeric = 0
+      + min_special = 0
+      + min_upper   = 5
+      + number      = true
+      + numeric     = true
+      + result      = (known after apply)
+      + special     = true
+      + upper       = true
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+root in ~/terraform-projects/provider-a via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.iac_code will be created
+  + resource "local_file" "iac_code" {
+      + content              = "Setting up infrastructure as code"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/opt/practice"
+      + id                   = (known after apply)
+    }
+
+  # random_string.iac_random will be created
+  + resource "random_string" "iac_random" {
+      + id          = (known after apply)
+      + length      = 10
+      + lower       = true
+      + min_lower   = 0
+      + min_numeric = 0
+      + min_special = 0
+      + min_upper   = 5
+      + number      = true
+      + numeric     = true
+      + result      = (known after apply)
+      + special     = true
+      + upper       = true
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+local_file.iac_code: Creating...
+local_file.iac_code: Creation complete after 0s [id=11bd49955f5aed77659cbc4e125e2f88a78ee1e5]
+random_string.iac_random: Creating...
+random_string.iac_random: Creation complete after 0s [id=NOBQIxRrq_]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+❯
+
+root in /opt on ☁️  (us-east-1) 
+❯ ll
+total 192
+drwxr-xr-x 1 root root   4096 Jul 21 08:57 ./
+drwxr-xr-x 1 root root 184320 Jul 21 08:58 ../
+-rwxr-xr-x 1 root root     33 Jul 21 08:57 practice*
+
+root in /opt on ☁️  (us-east-1) 
+❯ cat practice 
+Setting up infrastructure as code
+
+
