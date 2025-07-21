@@ -1,0 +1,212 @@
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ ll
+total 16
+drwxr-xr-x 2 root root 4096 Jul 21 09:58 ./
+drwxr-xr-x 3 root root 4096 Jul 21 09:54 ../
+-rw-r--r-- 1 root root   93 Jul  2 10:28 main.tf
+-rw-r--r-- 1 root root  648 Jul  2 10:28 variables.tf
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "jedi" {
+     filename = var.jedi["filename"]
+     content = var.jedi["content"]
+}
+
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ cat variables.tf 
+variable "name" {
+     type = string
+     default = "Mark"
+  
+}
+variable "number" {
+     type = bool
+     default = true
+  
+}
+variable "distance" {
+     type = number
+     default = 5
+  
+}
+variable "jedi" {
+     type = map
+     default = {
+     filename = "/root/first-jedi"
+     content = "phanius"
+     }
+  
+}
+
+variable "gender" {
+     type = list(string)
+     default = ["Male", "Female"]
+}
+variable "hard_drive" {
+     type = map
+     default = {
+          slow = "HHD"
+          fast = "SSD"
+     }
+}
+variable "users" {
+     type = set(string)
+     default = ["tom", "jerry", "pluto", "daffy", "donald", "jerry", "chip", "dale"]
+
+  
+}
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding latest version of hashicorp/local...
+- Installing hashicorp/local v2.5.3...
+- Installed hashicorp/local v2.5.3 (signed by HashiCorp)
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+
+
+
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.jedi will be created
+  + resource "local_file" "jedi" {
+      + content              = "phanius"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/first-jedi"
+      + id                   = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply"
+now.
+
+
+
+
+
+
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.jedi will be created
+  + resource "local_file" "jedi" {
+      + content              = "phanius"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/first-jedi"
+      + id                   = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+local_file.jedi: Creating...
+local_file.jedi: Creation complete after 0s [id=23760ef64e0124aa08fecf101c302d3b64220d1a]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+
+
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ terraform show
+# local_file.jedi:
+resource "local_file" "jedi" {
+    content              = "phanius"
+    content_base64sha256 = "xD3bsXhqAAuue3L03ZanPgAazsZ4FgFmLW5lRLSM/N4="
+    content_base64sha512 = "ZVf6M+F72rHspL9Up+48fCsgss0fanB81aNem/XWOE7E0UcQdksIQSmSLktci/rW1nuWstSz9r/a0HQ0yzD+Gg=="
+    content_md5          = "9c30481ec2b548acd944b0308d8229aa"
+    content_sha1         = "23760ef64e0124aa08fecf101c302d3b64220d1a"
+    content_sha256       = "c43ddbb1786a000bae7b72f4dd96a73e001acec6781601662d6e6544b48cfcde"
+    content_sha512       = "6557fa33e17bdab1eca4bf54a7ee3c7c2b20b2cd1f6a707cd5a35e9bf5d6384ec4d14710764b084129922e4b5c8bfad6d67b96b2d4b3f6bfdad07434cb30fe1a"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/first-jedi"
+    id                   = "23760ef64e0124aa08fecf101c302d3b64220d1a"
+}
+
+
+
+root in ~ on ☁️  (us-east-1) 
+❯ ll
+total 128
+drwx------ 1 root root  4096 Jul 21 10:04 ./
+drwxr-xr-x 1 root root 69632 Jul 21 10:05 ../
+drwxr-xr-x 2 root root  4096 Oct 23  2024 .aws/
+-rw-r--r-- 1 root root  3406 Oct 23  2024 .bashrc
+drwxr-xr-x 1 root root  4096 Jul 21 09:54 .cache/
+drwxr-xr-x 1 root root  4096 Oct 23  2024 .config/
+-rwxr-xr-x 1 root root     7 Jul 21 10:04 first-jedi*
+drwxr-xr-x 1 root root  4096 Oct 23  2024 .local/
+-rw-r--r-- 1 root root   161 Jul  9  2019 .profile
+-rw-r--r-- 1 root root   339 Jul  2 10:28 README.md
+drwxr-xr-x 1 root root  4096 Jul 21 09:55 .terminal_logs/
+drwxr-xr-x 2 root root  4096 Jul 21 10:04 .terraform.d/
+drwxr-xr-x 3 root root  4096 Jul 21 09:54 terraform-projects/
+
+root in ~ on ☁️  (us-east-1) 
+❯ cat first-jedi 
+phanius
+
+
+
