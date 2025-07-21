@@ -1,0 +1,247 @@
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ ll
+total 12
+drwxr-xr-x 2 root root 4096 Jul 21 13:40 ./
+drwxr-xr-x 3 root root 4096 Jul 21 13:40 ../
+-rw-r--r-- 1 root root  115 Jul 21 13:43 main.tf
+
+
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+output "os-version" {
+  value = data.local_file.os.content
+}
+data "local_file" "os" {
+  filename = "/etc/os-release"
+}
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+data.local_file.os: Reading...
+data.local_file.os: Read complete after 0s [id=5c22cbfdd6448c612db97759e8b82476f21e4cea]
+
+Changes to Outputs:
+  + os-version = <<-EOT
+        PRETTY_NAME="Ubuntu 22.04.5 LTS"
+        NAME="Ubuntu"
+        VERSION_ID="22.04"
+        VERSION="22.04.5 LTS (Jammy Jellyfish)"
+        VERSION_CODENAME=jammy
+        ID=ubuntu
+        ID_LIKE=debian
+        HOME_URL="https://www.ubuntu.com/"
+        SUPPORT_URL="https://help.ubuntu.com/"
+        BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+        PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+        UBUNTU_CODENAME=jammy
+    EOT
+
+You can apply this plan to save these new output values to the Terraform state, without changing any real infrastructure.
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run
+"terraform apply" now.
+
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+data.local_file.os: Reading...
+data.local_file.os: Read complete after 0s [id=5c22cbfdd6448c612db97759e8b82476f21e4cea]
+
+Changes to Outputs:
+  + os-version = <<-EOT
+        PRETTY_NAME="Ubuntu 22.04.5 LTS"
+        NAME="Ubuntu"
+        VERSION_ID="22.04"
+        VERSION="22.04.5 LTS (Jammy Jellyfish)"
+        VERSION_CODENAME=jammy
+        ID=ubuntu
+        ID_LIKE=debian
+        HOME_URL="https://www.ubuntu.com/"
+        SUPPORT_URL="https://help.ubuntu.com/"
+        BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+        PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+        UBUNTU_CODENAME=jammy
+    EOT
+
+You can apply this plan to save these new output values to the Terraform state, without changing any real infrastructure.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: ye
+
+Apply cancelled.
+
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+data.local_file.os: Reading...
+data.local_file.os: Read complete after 0s [id=5c22cbfdd6448c612db97759e8b82476f21e4cea]
+
+Changes to Outputs:
+  + os-version = <<-EOT
+        PRETTY_NAME="Ubuntu 22.04.5 LTS"
+        NAME="Ubuntu"
+        VERSION_ID="22.04"
+        VERSION="22.04.5 LTS (Jammy Jellyfish)"
+        VERSION_CODENAME=jammy
+        ID=ubuntu
+        ID_LIKE=debian
+        HOME_URL="https://www.ubuntu.com/"
+        SUPPORT_URL="https://help.ubuntu.com/"
+        BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+        PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+        UBUNTU_CODENAME=jammy
+    EOT
+
+You can apply this plan to save these new output values to the Terraform state, without changing any real infrastructure.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+os-version = <<EOT
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.5 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=jammy
+
+EOT
+
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ terraform show
+# data.local_file.os:
+data "local_file" "os" {
+    content              = <<-EOT
+        PRETTY_NAME="Ubuntu 22.04.5 LTS"
+        NAME="Ubuntu"
+        VERSION_ID="22.04"
+        VERSION="22.04.5 LTS (Jammy Jellyfish)"
+        VERSION_CODENAME=jammy
+        ID=ubuntu
+        ID_LIKE=debian
+        HOME_URL="https://www.ubuntu.com/"
+        SUPPORT_URL="https://help.ubuntu.com/"
+        BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+        PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+        UBUNTU_CODENAME=jammy
+    EOT
+    content_base64       = "UFJFVFRZX05BTUU9IlVidW50dSAyMi4wNC41IExUUyIKTkFNRT0iVWJ1bnR1IgpWRVJTSU9OX0lEPSIyMi4wNCIKVkVSU0lPTj0iMjIuMDQuNSBMVFMgKEphbW15IEplbGx5ZmlzaCkiClZFUlNJT05fQ09ERU5BTUU9amFtbXkKSUQ9dWJ1bnR1CklEX0xJS0U9ZGViaWFuCkhPTUVfVVJMPSJodHRwczovL3d3dy51YnVudHUuY29tLyIKU1VQUE9SVF9VUkw9Imh0dHBzOi8vaGVscC51YnVudHUuY29tLyIKQlVHX1JFUE9SVF9VUkw9Imh0dHBzOi8vYnVncy5sYXVuY2hwYWQubmV0L3VidW50dS8iClBSSVZBQ1lfUE9MSUNZX1VSTD0iaHR0cHM6Ly93d3cudWJ1bnR1LmNvbS9sZWdhbC90ZXJtcy1hbmQtcG9saWNpZXMvcHJpdmFjeS1wb2xpY3kiClVCVU5UVV9DT0RFTkFNRT1qYW1teQo="
+    content_base64sha256 = "WU1d3TWu20fwDZw00UABeQelufk8l1q6El/JJNqsXAc="
+    content_base64sha512 = "b2f9bnQSWHOcn1DwFGFWTz8bJI0ghXLHNOSW9SSrfB/SlNlh2i+HM04KAteHB1sWitdHz0gd+3fnJyEnIVK0Fg=="
+    content_md5          = "c3c63e4e2984ef68c452b005ef33c1f2"
+    content_sha1         = "5c22cbfdd6448c612db97759e8b82476f21e4cea"
+    content_sha256       = "594d5ddd35aedb47f00d9c34d140017907a5b9f93c975aba125fc924daac5c07"
+    content_sha512       = "6f67fd6e741258739c9f50f01461564f3f1b248d208572c734e496f524ab7c1fd294d961da2f87334e0a02d787075b168ad747cf481dfb77e72721272152b416"
+    filename             = "/etc/os-release"
+    id                   = "5c22cbfdd6448c612db97759e8b82476f21e4cea"
+}
+
+
+Outputs:
+
+os-version = <<-EOT
+    PRETTY_NAME="Ubuntu 22.04.5 LTS"
+    NAME="Ubuntu"
+    VERSION_ID="22.04"
+    VERSION="22.04.5 LTS (Jammy Jellyfish)"
+    VERSION_CODENAME=jammy
+    ID=ubuntu
+    ID_LIKE=debian
+    HOME_URL="https://www.ubuntu.com/"
+    SUPPORT_URL="https://help.ubuntu.com/"
+    BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+    PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+    UBUNTU_CODENAME=jammy
+EOT
+
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ cat /etc/os-release 
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.5 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=jammy
+
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ terraform output 
+os-version = <<EOT
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.5 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=jammy
+
+EOT
+
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+
+
+
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+output "os-version" {
+  value = data.local_file.os.content
+}
+data "local_file" "os" {
+  filename = "/etc/os-release"
+}
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+
+
+
+
+❯ cat ebs.tf 
+data "aws_ebs_volume" "gp2_volume" {
+  most_recent = true
+
+  filter {
+    name   = "volume-type"
+    values = ["gp2"]
+  }
+}
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+
+
+❯ cat s3.tf 
+data "aws_s3_bucket" "selected" {
+  bucket = "bucket.test.com"
+}
+root in ~/terraform-projects/project-lexcorp via 💠 default on ☁️  (us-east-1) 
+❯ 
