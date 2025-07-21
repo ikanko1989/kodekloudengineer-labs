@@ -1,0 +1,171 @@
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource local_file games {
+  filename = var.filename
+  content = "football"
+}
+
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ cat variables.tf 
+variable "filename" {
+  type = string
+}
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ cat basket.auto.tfvars 
+filename = "/root/basketball.txt"
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+
+❯ cat terraform.tfvars 
+filename = "/root/football.txt"
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+
+❯ cat throw.auto.tfvars 
+filename = "/root/baseball.txt"
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Reusing previous version of hashicorp/local from the dependency lock file
+- Using previously-installed hashicorp/local v2.5.3
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+
+
+
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.games will be created
+  + resource "local_file" "games" {
+      + content              = "football"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/baseball.txt"
+      + id                   = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply"
+now.
+
+
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # local_file.games will be created
+  + resource "local_file" "games" {
+      + content              = "football"
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "/root/baseball.txt"
+      + id                   = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+local_file.games: Creating...
+local_file.games: Creation complete after 0s [id=2d27b62c597ec858f6e7b54e7e58525e6a95e6d8]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ terraform show
+# local_file.games:
+resource "local_file" "games" {
+    content              = "football"
+    content_base64sha256 = "Y4Lerx9dxueSt220pKe/K6RoiE4ACyXnko5iHif7I8s="
+    content_base64sha512 = "QbigTcuMJXlyBH23NZu1RLFb6qYuOfoWpFh9uge338r38jNClh4/knvd9Ja7UOc2l16CWcmpkNtSVYWsXmvkAg=="
+    content_md5          = "37b4e2d82900d5e94b8da524fbeb33c0"
+    content_sha1         = "2d27b62c597ec858f6e7b54e7e58525e6a95e6d8"
+    content_sha256       = "6382deaf1f5dc6e792b76db4a4a7bf2ba468884e000b25e7928e621e27fb23cb"
+    content_sha512       = "41b8a04dcb8c257972047db7359bb544b15beaa62e39fa16a4587dba07b7dfcaf7f23342961e3f927bddf496bb50e736975e8259c9a990db525585ac5e6be402"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/baseball.txt"
+    id                   = "2d27b62c597ec858f6e7b54e7e58525e6a95e6d8"
+}
+
+
+
+root in ~/terraform-projects/variables via 💠 default on ☁️  (us-east-1) 
+❯ cd 
+
+root in ~ on ☁️  (us-east-1) 
+❯ ll
+total 120
+drwx------ 1 root root  4096 Jul 21 10:16 ./
+drwxr-xr-x 1 root root 61440 Jul 21 10:16 ../
+drwxr-xr-x 2 root root  4096 Oct 23  2024 .aws/
+-rwxr-xr-x 1 root root     8 Jul 21 10:16 baseball.txt*
+-rw-r--r-- 1 root root  3406 Oct 23  2024 .bashrc
+drwxr-xr-x 1 root root  4096 Jul 21 10:10 .cache/
+drwxr-xr-x 1 root root  4096 Oct 23  2024 .config/
+drwxr-xr-x 1 root root  4096 Oct 23  2024 .local/
+-rw-r--r-- 1 root root   161 Jul  9  2019 .profile
+-rw-r--r-- 1 root root   339 Jul  2 10:28 README.md
+drwxr-xr-x 1 root root  4096 Jul 21 10:10 .terminal_logs/
+drwxr-xr-x 2 root root  4096 Jul 21 10:12 .terraform.d/
+drwxr-xr-x 3 root root  4096 Jul 21 10:10 terraform-projects/
+
+root in ~ on ☁️  (us-east-1) 
+❯ cat baseball.txt 
+football
+root in ~ on ☁️  (us-east-1) 
+❯ 
