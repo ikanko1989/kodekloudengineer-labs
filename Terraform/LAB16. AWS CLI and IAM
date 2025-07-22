@@ -1,0 +1,168 @@
+root in ~ on ☁️  (us-east-1) 
+❯ aws --version
+aws-cli/2.18.12 Python/3.12.6 Linux/5.15.0-1083-gcp exe/x86_64.ubuntu.22
+
+
+
+
+root in ~ on ☁️  (us-east-1) took 10s 
+❯ aws iam list-users --endpoint-url http://aws:4566
+{
+    "Users": [
+        {
+            "Path": "/",
+            "UserName": "jill",
+            "UserId": "qh9vj6dsgeprf9qixu6z",
+            "Arn": "arn:aws:iam::000000000000:user/jill",
+            "CreateDate": "2025-07-22T10:16:32.916000+00:00"
+        },
+        {
+            "Path": "/",
+            "UserName": "jack",
+            "UserId": "yot3fd2bpr42u7wwrfdw",
+            "Arn": "arn:aws:iam::000000000000:user/jack",
+            "CreateDate": "2025-07-22T10:16:34.205000+00:00"
+        }
+    ]
+}
+
+
+
+
+
+root in ~ on ☁️  (us-east-1) 
+❯ aws iam create-user --user-name mary --endpoint-url http://aws:4566
+{
+    "User": {
+        "Path": "/",
+        "UserName": "mary",
+        "UserId": "epwj4vet5i8dv7wyf95f",
+        "Arn": "arn:aws:iam::000000000000:user/mary",
+        "CreateDate": "2025-07-22T10:18:15.795000+00:00"
+    }
+}
+
+root in ~ on ☁️  (us-east-1) 
+❯ aws iam list-users --endpoint-url http://aws:4566
+{
+    "Users": [
+        {
+            "Path": "/",
+            "UserName": "jill",
+            "UserId": "qh9vj6dsgeprf9qixu6z",
+            "Arn": "arn:aws:iam::000000000000:user/jill",
+            "CreateDate": "2025-07-22T10:16:32.916000+00:00"
+        },
+        {
+            "Path": "/",
+            "UserName": "jack",
+            "UserId": "yot3fd2bpr42u7wwrfdw",
+            "Arn": "arn:aws:iam::000000000000:user/jack",
+            "CreateDate": "2025-07-22T10:16:34.205000+00:00"
+        },
+        {
+            "Path": "/",
+            "UserName": "mary",
+            "UserId": "epwj4vet5i8dv7wyf95f",
+            "Arn": "arn:aws:iam::000000000000:user/mary",
+            "CreateDate": "2025-07-22T10:18:15.795000+00:00"
+        }
+    ]
+}
+
+
+
+
+
+root in ~ on ☁️  (us-east-1) 
+❯ cd /root/.aws/
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ ll
+total 20
+drwxr-xr-x 2 root root 4096 Oct 23  2024 ./
+drwx------ 1 root root 4096 Jul 22 10:18 ../
+-rw------- 1 root root   29 Oct 23  2024 config
+-rw------- 1 root root   62 Oct 23  2024 credentials
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ cat config 
+[default]
+region = us-east-1
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ cat credentials 
+[default]
+aws_access_key_id = foo
+aws_secret_access_key = bar
+
+
+
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ aws iam  attach-user-policy --endpoint-url http://aws:4566 --user-name mary --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+
+
+
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ aws iam create-group --group-name project-sapphire-developers  --endpoint-url http://aws:4566
+{
+    "Group": {
+        "Path": "/",
+        "GroupName": "project-sapphire-developers",
+        "GroupId": "bqza9qmwxsdu3ucs3uwx",
+        "Arn": "arn:aws:iam::000000000000:group/project-sapphire-developers",
+        "CreateDate": "2025-07-22T10:25:22.021000+00:00"
+    }
+}
+
+
+
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ aws iam add-user-to-group --user-name jack  --group-name project-sapphire-developers  --endpoint-url http://aws:4566
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ aws iam add-user-to-group --user-name jill  --group-name project-sapphire-developers  --endpoint-url http://aws:4566
+
+
+
+
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ aws iam list-attached-group-policies --endpoint-url http://aws:4566  --group-name project-sapphire-developers
+{
+    "AttachedPolicies": []
+}
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ aws iam list-attached-user-policies --endpoint-url http://aws:4566  --user-name jack
+{
+    "AttachedPolicies": []
+}
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ aws iam list-attached-user-policies --endpoint-url http://aws:4566  --user-name jill
+{
+    "AttachedPolicies": []
+}
+
+
+
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess  --endpoint-url http://aws:4566  --group-name project-sapph
+ire-developers
+
+root in ~/.aws on ☁️  (us-east-1) 
+❯ aws iam list-attached-group-policies --endpoint-url http://aws:4566  --group-name project-sapphire-developers
+{
+    "AttachedPolicies": [
+        {
+            "PolicyName": "AmazonEC2FullAccess",
+            "PolicyArn": "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+        }
+    ]
+}
+
