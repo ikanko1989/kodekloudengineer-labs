@@ -1,0 +1,398 @@
+root in ~/terraform-projects/project-anime via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "top10" {
+    filename = "/root/anime/top10.txt"
+    content  = "1. Naruto\n2. DragonBallZ\n3. Death Note\nFullmetal Alchemist\nOne-Punch Man\n"
+  
+}
+resource "local_file" "hall_of_fame" {
+  filename = "/root/anime/hall-of-fame.txt"
+  content = "1.Attack On Titan\n2. Naruto\n3. Bleach\n"
+
+}
+resource "local_file" "new_shows" {
+  filename = "/root/anime/new_shows.txt"
+  content = "1. Cannon Busters\n2. Last Hope\n3. Lost Song\n"
+
+}
+resource "local_file" "classics" {
+  filename = "/root/anime/classic_shows.txt"
+  content = "1. DragonBall\n"
+
+}
+
+
+
+
+
+
+root in ~/terraform-projects/project-anime via 💠 default on ☁️  (us-east-1) 
+❯ cat terraform.tfstate 
+{
+  "version": 4,
+  "terraform_version": "1.5.0",
+  "serial": 4,
+  "lineage": "1eeda1be-c631-7ef2-5395-0125515bf959",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "classics",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "1. DragonBall\n",
+            "content_base64": null,
+            "content_base64sha256": "6Ity8EEWB9hY2pJUjJQsdyBi7iDtrqnHg7E0VR9KS4A=",
+            "content_base64sha512": "lRKrxM4reT5okTZxIy6k/HdgLiXIJ+L1LIr2FUWcLldv44rFq/kOmiB6qOO0ny3Yl6w6C+79BdTy3TLHG0G5fg==",
+            "content_md5": "13d46e58bee23e8d0560d9cf3cef8966",
+            "content_sha1": "69f539876d8db4e6873466ab5b4d56ebf32667b2",
+            "content_sha256": "e88b72f0411607d858da92548c942c772062ee20edaea9c783b134551f4a4b80",
+            "content_sha512": "9512abc4ce2b793e68913671232ea4fc77602e25c827e2f52c8af615459c2e576fe38ac5abf90e9a207aa8e3b49f2dd897ac3a0beefd05d4f2dd32c71b41b97e",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "/root/anime/classic_shows.txt",
+            "id": "69f539876d8db4e6873466ab5b4d56ebf32667b2",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "hall_of_fame",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "1.Attack On Titan\n2. Naruto\n3. Bleach\n",
+            "content_base64": null,
+            "content_base64sha256": "E8TiDfXtEPsxRBOUsXQZFlj1eJC2iMsAxoapINLda6U=",
+            "content_base64sha512": "sN3+2do9GFX6ZBgeVABBrUijhkRKjXQEOpapxbmk1myYb06RcIdDvoQxKSJ6PLEPY+zCuL0FwAgBGOKP4S+aqw==",
+            "content_md5": "dc7f8fe0e31dcd1b8462dd96ab803dc8",
+            "content_sha1": "92c2a2b8e5f1a695e5feca2f2a924be94835ef9f",
+            "content_sha256": "13c4e20df5ed10fb31441394b174191658f57890b688cb00c686a920d2dd6ba5",
+            "content_sha512": "b0ddfed9da3d1855fa64181e540041ad48a386444a8d74043a96a9c5b9a4d66c986f4e91708743be843129227a3cb10f63ecc2b8bd05c0080118e28fe12f9aab",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "/root/anime/hall-of-fame.txt",
+            "id": "92c2a2b8e5f1a695e5feca2f2a924be94835ef9f",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "new_shows",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "1. Cannon Busters\n2. Last Hope\n3. Lost Song\n",
+            "content_base64": null,
+            "content_base64sha256": "S7dTehlGq8zD+YqW5Y1Jfo0ezmqbMlboZBttaRZ27Bg=",
+            "content_base64sha512": "9rCDPcAsYC8r0qqxoO8J0GtksSnXGO2tg4wXPDhIKVwYylMoQ4/GuQrjVIeeytp7JfSfSTV9vc3a0yhfB7yviQ==",
+            "content_md5": "4fc60df5963e86531ddd03429c6a1428",
+            "content_sha1": "96f89a5cb83d9f27e53cee32e4897d270fe599c2",
+            "content_sha256": "4bb7537a1946abccc3f98a96e58d497e8d1ece6a9b3256e8641b6d691676ec18",
+            "content_sha512": "f6b0833dc02c602f2bd2aab1a0ef09d06b64b129d718edad838c173c3848295c18ca5328438fc6b90ae354879ecada7b25f49f49357dbdcddad3285f07bcaf89",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "/root/anime/new_shows.txt",
+            "id": "96f89a5cb83d9f27e53cee32e4897d270fe599c2",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "top10",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "1. Naruto\n2. DragonBallZ\n3. Death Note\nFullmetal Alchemist\nOne-Punch Man\n",
+            "content_base64": null,
+            "content_base64sha256": "E1+CvFzTzYIFBGHKR7PslnAA/Fy5GsdbD0DF32Vvh1c=",
+            "content_base64sha512": "qhCSaRzN1IBed4NY9elGp28ybdw+zbQD9DCTsQatrrnFtanJP9UgMaj39r4Zq65vHNmAmC1kc4CHvxgw4hiRJQ==",
+            "content_md5": "dd34c45437f5a7a0c66835a80ed8c58e",
+            "content_sha1": "a96174702c7d532583e312e123a216e35721021f",
+            "content_sha256": "135f82bc5cd3cd82050461ca47b3ec967000fc5cb91ac75b0f40c5df656f8757",
+            "content_sha512": "aa1092691ccdd4805e778358f5e946a76f326ddc3ecdb403f43093b106adaeb9c5b5a9c93fd52031a8f7f6be19abae6f1cd980982d64738087bf1830e2189125",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "/root/anime/top10.txt",
+            "id": "a96174702c7d532583e312e123a216e35721021f",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
+
+
+
+
+❯ terraform state show local_file.classics
+# local_file.classics:
+resource "local_file" "classics" {
+    content              = <<-EOT
+        1. DragonBall
+    EOT
+    content_base64sha256 = "6Ity8EEWB9hY2pJUjJQsdyBi7iDtrqnHg7E0VR9KS4A="
+    content_base64sha512 = "lRKrxM4reT5okTZxIy6k/HdgLiXIJ+L1LIr2FUWcLldv44rFq/kOmiB6qOO0ny3Yl6w6C+79BdTy3TLHG0G5fg=="
+    content_md5          = "13d46e58bee23e8d0560d9cf3cef8966"
+    content_sha1         = "69f539876d8db4e6873466ab5b4d56ebf32667b2"
+    content_sha256       = "e88b72f0411607d858da92548c942c772062ee20edaea9c783b134551f4a4b80"
+    content_sha512       = "9512abc4ce2b793e68913671232ea4fc77602e25c827e2f52c8af615459c2e576fe38ac5abf90e9a207aa8e3b49f2dd897ac3a0beefd05d4f2dd32c71b41b97e"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/anime/classic_shows.txt"
+    id                   = "69f539876d8db4e6873466ab5b4d56ebf32667b2"
+}
+
+
+
+
+
+
+
+
+root in ~/terraform-projects/project-anime via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "local_file" "top10" {
+    filename = "/root/anime/top10.txt"
+    content  = "1. Naruto\n2. DragonBallZ\n3. Death Note\nFullmetal Alchemist\nOne-Punch Man\n"
+  
+}
+
+resource "local_file" "new_shows" {
+  filename = "/root/anime/new_shows.txt"
+  content = "1. Cannon Busters\n2. Last Hope\n3. Lost Song\n"
+
+}
+resource "local_file" "classics" {
+  filename = "/root/anime/classic_shows.txt"
+  content = "1. DragonBall\n"
+
+}
+
+root in ~/terraform-projects/project-anime via 💠 default on ☁️  (us-east-1) 
+❯ terraform state  rm local_file.hall_of_fame
+Removed local_file.hall_of_fame
+Successfully removed 1 resource instance(s).
+
+
+root in ~/terraform-projects/project-anime via 💠 default on ☁️  (us-east-1) 
+❯ terraform show
+# local_file.classics:
+resource "local_file" "classics" {
+    content              = <<-EOT
+        1. DragonBall
+    EOT
+    content_base64sha256 = "6Ity8EEWB9hY2pJUjJQsdyBi7iDtrqnHg7E0VR9KS4A="
+    content_base64sha512 = "lRKrxM4reT5okTZxIy6k/HdgLiXIJ+L1LIr2FUWcLldv44rFq/kOmiB6qOO0ny3Yl6w6C+79BdTy3TLHG0G5fg=="
+    content_md5          = "13d46e58bee23e8d0560d9cf3cef8966"
+    content_sha1         = "69f539876d8db4e6873466ab5b4d56ebf32667b2"
+    content_sha256       = "e88b72f0411607d858da92548c942c772062ee20edaea9c783b134551f4a4b80"
+    content_sha512       = "9512abc4ce2b793e68913671232ea4fc77602e25c827e2f52c8af615459c2e576fe38ac5abf90e9a207aa8e3b49f2dd897ac3a0beefd05d4f2dd32c71b41b97e"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/anime/classic_shows.txt"
+    id                   = "69f539876d8db4e6873466ab5b4d56ebf32667b2"
+}
+
+# local_file.new_shows:
+resource "local_file" "new_shows" {
+    content              = <<-EOT
+        1. Cannon Busters
+        2. Last Hope
+        3. Lost Song
+    EOT
+    content_base64sha256 = "S7dTehlGq8zD+YqW5Y1Jfo0ezmqbMlboZBttaRZ27Bg="
+    content_base64sha512 = "9rCDPcAsYC8r0qqxoO8J0GtksSnXGO2tg4wXPDhIKVwYylMoQ4/GuQrjVIeeytp7JfSfSTV9vc3a0yhfB7yviQ=="
+    content_md5          = "4fc60df5963e86531ddd03429c6a1428"
+    content_sha1         = "96f89a5cb83d9f27e53cee32e4897d270fe599c2"
+    content_sha256       = "4bb7537a1946abccc3f98a96e58d497e8d1ece6a9b3256e8641b6d691676ec18"
+    content_sha512       = "f6b0833dc02c602f2bd2aab1a0ef09d06b64b129d718edad838c173c3848295c18ca5328438fc6b90ae354879ecada7b25f49f49357dbdcddad3285f07bcaf89"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/anime/new_shows.txt"
+    id                   = "96f89a5cb83d9f27e53cee32e4897d270fe599c2"
+}
+
+# local_file.top10:
+resource "local_file" "top10" {
+    content              = <<-EOT
+        1. Naruto
+        2. DragonBallZ
+        3. Death Note
+        Fullmetal Alchemist
+        One-Punch Man
+    EOT
+    content_base64sha256 = "E1+CvFzTzYIFBGHKR7PslnAA/Fy5GsdbD0DF32Vvh1c="
+    content_base64sha512 = "qhCSaRzN1IBed4NY9elGp28ybdw+zbQD9DCTsQatrrnFtanJP9UgMaj39r4Zq65vHNmAmC1kc4CHvxgw4hiRJQ=="
+    content_md5          = "dd34c45437f5a7a0c66835a80ed8c58e"
+    content_sha1         = "a96174702c7d532583e312e123a216e35721021f"
+    content_sha256       = "135f82bc5cd3cd82050461ca47b3ec967000fc5cb91ac75b0f40c5df656f8757"
+    content_sha512       = "aa1092691ccdd4805e778358f5e946a76f326ddc3ecdb403f43093b106adaeb9c5b5a9c93fd52031a8f7f6be19abae6f1cd980982d64738087bf1830e2189125"
+    directory_permission = "0777"
+    file_permission      = "0777"
+    filename             = "/root/anime/top10.txt"
+    id                   = "a96174702c7d532583e312e123a216e35721021f"
+}
+
+root in ~/terraform-projects/project-anime via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+
+
+
+
+
+
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "random_pet" "super_pet_1" {
+    length = var.length1
+    prefix = var.prefix1
+}
+resource "random_pet" "super_pet_2" {
+    length = var.length2
+    prefix = var.prefix2
+}
+
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ cat variables.tf 
+variable "length1" {
+    default = "1"
+}
+variable "length2" {
+    default = "2"
+}
+variable "prefix1" {
+    default = "Super"
+}
+variable "prefix2" {
+    default = "Wonder"
+}
+
+
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ cat terraform.tf 
+terraform {
+  backend "s3" {
+    key = "terraform.tfstate"
+    region = "us-east-1"
+    bucket = "remote-state"
+    endpoint = "http://172.16.238.105:9000"
+    force_path_style = true
+
+
+    skip_credentials_validation = true
+
+    skip_metadata_api_check = true
+    skip_region_validation = true
+  }
+}
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+
+
+
+
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ terraform state list
+random_pet.super_pet_1
+random_pet.super_pet_2
+
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ terraform show 
+# random_pet.super_pet_1:
+resource "random_pet" "super_pet_1" {
+    id        = "Super-pony"
+    length    = 1
+    prefix    = "Super"
+    separator = "-"
+}
+
+# random_pet.super_pet_2:
+resource "random_pet" "super_pet_2" {
+    id        = "Wonder-together-marlin"
+    length    = 2
+    prefix    = "Wonder"
+    separator = "-"
+}
+
+
+
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ terraform state mv random_pet.super_pet_1 random_pet.ultra_pet
+Move "random_pet.super_pet_1" to "random_pet.ultra_pet"
+Successfully moved 1 object(s).
+
+
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ terraform show 
+# random_pet.super_pet_2:
+resource "random_pet" "super_pet_2" {
+    id        = "Wonder-together-marlin"
+    length    = 2
+    prefix    = "Wonder"
+    separator = "-"
+}
+
+# random_pet.ultra_pet:
+resource "random_pet" "ultra_pet" {
+    id        = "Super-pony"
+    length    = 1
+    prefix    = "Super"
+    separator = "-"
+}
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ terraform state list
+random_pet.super_pet_2
+random_pet.ultra_pet
+
+root in ~/terraform-projects/super-pets via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "random_pet" "ultra_pet" {
+    length = var.length1
+    prefix = var.prefix1
+}
+resource "random_pet" "super_pet_2" {
+    length = var.length2
+    prefix = var.prefix2
+}
