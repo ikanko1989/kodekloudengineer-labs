@@ -1,0 +1,585 @@
+root in ~/terraform-projects/project-sapphire via 💠 default on ☁️  (us-east-1) 
+❯ terraform workspace list
+* default
+
+
+
+root in ~/terraform-projects/project-sapphire via 💠 default on ☁️  (us-east-1) 
+❯ terraform workspace new us-payroll
+Created and switched to workspace "us-payroll"!
+
+You're now on a new, empty workspace. Workspaces isolate their state,
+so if you run "terraform plan" Terraform will not see any existing state
+for this configuration.
+
+root in ~/terraform-projects/project-sapphire via 💠 us-payroll on ☁️  (us-east-1) 
+❯ terraform workspace new uk-payroll
+Created and switched to workspace "uk-payroll"!
+
+You're now on a new, empty workspace. Workspaces isolate their state,
+so if you run "terraform plan" Terraform will not see any existing state
+for this configuration.
+
+root in ~/terraform-projects/project-sapphire via 💠 uk-payroll on ☁️  (us-east-1) 
+❯ terraform workspace new india-payroll
+Created and switched to workspace "india-payroll"!
+
+You're now on a new, empty workspace. Workspaces isolate their state,
+so if you run "terraform plan" Terraform will not see any existing state
+for this configuration.
+
+root in ~/terraform-projects/project-sapphire via 💠 india-payroll on ☁️  (us-east-1) 
+❯ terraform workspace list
+  default
+* india-payroll
+  uk-payroll
+  us-payroll
+
+
+root in ~/terraform-projects/project-sapphire via 💠 india-payroll on ☁️  (us-east-1) 
+❯ terraform workspace select us-payroll 
+Switched to workspace "us-payroll".
+
+
+
+
+
+root in ~/terraform-projects/project-sapphire via 💠 us-payroll on ☁️  (us-east-1) 
+❯ cat main.tf 
+module "payroll_app" {
+  source = "/root/terraform-projects/modules/payroll-app"
+  app_region=lookup(var.region,terraform.workspace)
+  ami=lookup(var.ami,terraform.workspace)
+
+}
+root in ~/terraform-projects/project-sapphire via 💠 us-payroll on ☁️  (us-east-1) 
+❯ terraform init
+
+Initializing the backend...
+Initializing modules...
+Downloading file:///root/terraform-projects/modules/payroll-app for payroll_app...
+- payroll_app in .terraform/modules/payroll_app
+
+Initializing provider plugins...
+- Finding hashicorp/aws versions matching "4.15.0"...
+- Installing hashicorp/aws v4.15.0...
+- Installed hashicorp/aws v4.15.0 (signed by HashiCorp)
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+
+
+
+
+
+
+
+
+
+root in ~/terraform-projects/project-sapphire via 💠 us-payroll on ☁️  (us-east-1) took 3s 
+❯ terraform workspace list 
+  default
+  india-payroll
+  uk-payroll
+* us-payroll
+
+
+root in ~/terraform-projects/project-sapphire via 💠 us-payroll on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following
+symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.payroll_app.aws_dynamodb_table.payroll_db will be created
+  + resource "aws_dynamodb_table" "payroll_db" {
+      + arn              = (known after apply)
+      + billing_mode     = "PAY_PER_REQUEST"
+      + hash_key         = "EmployeeID"
+      + id               = (known after apply)
+      + name             = "us-east-1_user_data"
+      + read_capacity    = (known after apply)
+      + stream_arn       = (known after apply)
+      + stream_label     = (known after apply)
+      + stream_view_type = (known after apply)
+      + tags_all         = (known after apply)
+      + write_capacity   = (known after apply)
+
+      + attribute {
+          + name = "Address"
+          + type = "S"
+        }
+      + attribute {
+          + name = "Department"
+          + type = "S"
+        }
+      + attribute {
+          + name = "EmployeeID"
+          + type = "N"
+        }
+      + attribute {
+          + name = "age"
+          + type = "N"
+        }
+
+      + global_secondary_index {
+          + hash_key           = "Address"
+          + name               = "Address"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+      + global_secondary_index {
+          + hash_key           = "Department"
+          + name               = "Department"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+      + global_secondary_index {
+          + hash_key           = "EmployeeID"
+          + name               = "EmployeeID"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+      + global_secondary_index {
+          + hash_key           = "age"
+          + name               = "age"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+    }
+
+  # module.payroll_app.aws_instance.app_server will be created
+  + resource "aws_instance" "app_server" {
+      + ami                                  = "ami-24e140119877avm"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t2.medium"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "Name" = "us-east-1-app-server"
+        }
+      + tags_all                             = {
+          + "Name" = "us-east-1-app-server"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = (known after apply)
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+    }
+
+  # module.payroll_app.aws_s3_bucket.payroll_data will be created
+  + resource "aws_s3_bucket" "payroll_data" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
+      + arn                         = (known after apply)
+      + bucket                      = "us-east-1-flexit-payroll-alpha-22001c"
+      + bucket_domain_name          = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = false
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = (known after apply)
+      + request_payer               = (known after apply)
+      + tags_all                    = (known after apply)
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+    }
+
+Plan: 3 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions in workspace "us-payroll"?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+module.payroll_app.aws_s3_bucket.payroll_data: Creating...
+module.payroll_app.aws_dynamodb_table.payroll_db: Creating...
+module.payroll_app.aws_s3_bucket.payroll_data: Creation complete after 1s [id=us-east-1-flexit-payroll-alpha-22001c]
+module.payroll_app.aws_dynamodb_table.payroll_db: Creation complete after 8s [id=us-east-1_user_data]
+module.payroll_app.aws_instance.app_server: Creating...
+module.payroll_app.aws_instance.app_server: Still creating... [10s elapsed]
+module.payroll_app.aws_instance.app_server: Creation complete after 10s [id=i-a6a59726573a89f93]
+
+Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
+
+root in ~/terraform-projects/project-sapphire via 💠 us-payroll on ☁️  (us-east-1) took 24s 
+❯ terraform state list
+module.payroll_app.aws_dynamodb_table.payroll_db
+module.payroll_app.aws_instance.app_server
+module.payroll_app.aws_s3_bucket.payroll_data
+
+
+
+
+
+root in ~/terraform-projects/project-sapphire via 💠 us-payroll on ☁️  (us-east-1) 
+❯ terraform workspace select uk-payroll 
+Switched to workspace "uk-payroll".
+
+root in ~/terraform-projects/project-sapphire via 💠 uk-payroll on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following
+symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.payroll_app.aws_dynamodb_table.payroll_db will be created
+  + resource "aws_dynamodb_table" "payroll_db" {
+      + arn              = (known after apply)
+      + billing_mode     = "PAY_PER_REQUEST"
+      + hash_key         = "EmployeeID"
+      + id               = (known after apply)
+      + name             = "eu-west-2_user_data"
+      + read_capacity    = (known after apply)
+      + stream_arn       = (known after apply)
+      + stream_label     = (known after apply)
+      + stream_view_type = (known after apply)
+      + tags_all         = (known after apply)
+      + write_capacity   = (known after apply)
+
+      + attribute {
+          + name = "Address"
+          + type = "S"
+        }
+      + attribute {
+          + name = "Department"
+          + type = "S"
+        }
+      + attribute {
+          + name = "EmployeeID"
+          + type = "N"
+        }
+      + attribute {
+          + name = "age"
+          + type = "N"
+        }
+
+      + global_secondary_index {
+          + hash_key           = "Address"
+          + name               = "Address"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+      + global_secondary_index {
+          + hash_key           = "Department"
+          + name               = "Department"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+      + global_secondary_index {
+          + hash_key           = "EmployeeID"
+          + name               = "EmployeeID"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+      + global_secondary_index {
+          + hash_key           = "age"
+          + name               = "age"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+    }
+
+  # module.payroll_app.aws_instance.app_server will be created
+  + resource "aws_instance" "app_server" {
+      + ami                                  = "ami-35e140119877avm"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t2.medium"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "Name" = "eu-west-2-app-server"
+        }
+      + tags_all                             = {
+          + "Name" = "eu-west-2-app-server"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = (known after apply)
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+    }
+
+  # module.payroll_app.aws_s3_bucket.payroll_data will be created
+  + resource "aws_s3_bucket" "payroll_data" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
+      + arn                         = (known after apply)
+      + bucket                      = "eu-west-2-flexit-payroll-alpha-22001c"
+      + bucket_domain_name          = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = false
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = (known after apply)
+      + request_payer               = (known after apply)
+      + tags_all                    = (known after apply)
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+    }
+
+Plan: 3 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions in workspace "uk-payroll"?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+module.payroll_app.aws_s3_bucket.payroll_data: Creating...
+module.payroll_app.aws_dynamodb_table.payroll_db: Creating...
+module.payroll_app.aws_s3_bucket.payroll_data: Creation complete after 0s [id=eu-west-2-flexit-payroll-alpha-22001c]
+module.payroll_app.aws_dynamodb_table.payroll_db: Creation complete after 1s [id=eu-west-2_user_data]
+module.payroll_app.aws_instance.app_server: Creating...
+module.payroll_app.aws_instance.app_server: Still creating... [10s elapsed]
+module.payroll_app.aws_instance.app_server: Creation complete after 10s [id=i-333a0612516e08fdc]
+
+Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
+
+root in ~/terraform-projects/project-sapphire via 💠 uk-payroll on ☁️  (us-east-1) took 18s 
+❯ terraform state list
+module.payroll_app.aws_dynamodb_table.payroll_db
+module.payroll_app.aws_instance.app_server
+module.payroll_app.aws_s3_bucket.payroll_data
+
+
+
+
+root in ~/terraform-projects/project-sapphire via 💠 uk-payroll on ☁️  (us-east-1) 
+❯  terraform workspace select india-payroll
+Switched to workspace "india-payroll".
+
+root in ~/terraform-projects/project-sapphire via 💠 india-payroll on ☁️  (us-east-1) 
+❯ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following
+symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.payroll_app.aws_dynamodb_table.payroll_db will be created
+  + resource "aws_dynamodb_table" "payroll_db" {
+      + arn              = (known after apply)
+      + billing_mode     = "PAY_PER_REQUEST"
+      + hash_key         = "EmployeeID"
+      + id               = (known after apply)
+      + name             = "ap-south-1_user_data"
+      + read_capacity    = (known after apply)
+      + stream_arn       = (known after apply)
+      + stream_label     = (known after apply)
+      + stream_view_type = (known after apply)
+      + tags_all         = (known after apply)
+      + write_capacity   = (known after apply)
+
+      + attribute {
+          + name = "Address"
+          + type = "S"
+        }
+      + attribute {
+          + name = "Department"
+          + type = "S"
+        }
+      + attribute {
+          + name = "EmployeeID"
+          + type = "N"
+        }
+      + attribute {
+          + name = "age"
+          + type = "N"
+        }
+
+      + global_secondary_index {
+          + hash_key           = "Address"
+          + name               = "Address"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+      + global_secondary_index {
+          + hash_key           = "Department"
+          + name               = "Department"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+      + global_secondary_index {
+          + hash_key           = "EmployeeID"
+          + name               = "EmployeeID"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+      + global_secondary_index {
+          + hash_key           = "age"
+          + name               = "age"
+          + non_key_attributes = []
+          + projection_type    = "ALL"
+        }
+    }
+
+  # module.payroll_app.aws_instance.app_server will be created
+  + resource "aws_instance" "app_server" {
+      + ami                                  = "ami-55140119877avm"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t2.medium"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "Name" = "ap-south-1-app-server"
+        }
+      + tags_all                             = {
+          + "Name" = "ap-south-1-app-server"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = (known after apply)
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+    }
+
+  # module.payroll_app.aws_s3_bucket.payroll_data will be created
+  + resource "aws_s3_bucket" "payroll_data" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
+      + arn                         = (known after apply)
+      + bucket                      = "ap-south-1-flexit-payroll-alpha-22001c"
+      + bucket_domain_name          = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
+      + force_destroy               = false
+      + hosted_zone_id              = (known after apply)
+      + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
+      + region                      = (known after apply)
+      + request_payer               = (known after apply)
+      + tags_all                    = (known after apply)
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
+    }
+
+Plan: 3 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions in workspace "india-payroll"?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+module.payroll_app.aws_s3_bucket.payroll_data: Creating...
+module.payroll_app.aws_dynamodb_table.payroll_db: Creating...
+module.payroll_app.aws_s3_bucket.payroll_data: Creation complete after 0s [id=ap-south-1-flexit-payroll-alpha-22001c]
+module.payroll_app.aws_dynamodb_table.payroll_db: Creation complete after 0s [id=ap-south-1_user_data]
+module.payroll_app.aws_instance.app_server: Creating...
+module.payroll_app.aws_instance.app_server: Still creating... [10s elapsed]
+module.payroll_app.aws_instance.app_server: Creation complete after 11s [id=i-ea4a6ef2a8094a415]
+
+Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
+
+
+
+root in ~/terraform-projects/project-sapphire via 💠 india-payroll on ☁️  (us-east-1) 
+❯ terraform state list
+module.payroll_app.aws_dynamodb_table.payroll_db
+module.payroll_app.aws_instance.app_server
+module.payroll_app.aws_s3_bucket.payroll_data
+
+
