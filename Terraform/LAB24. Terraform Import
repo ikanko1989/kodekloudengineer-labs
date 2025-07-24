@@ -1,0 +1,332 @@
+
+root in ~ on ☁️  (us-east-1) 
+❯ cd terraform-projects/project-jade/
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ aws ec2 describe-instances --endpoint http://aws:4566  --filters "Name=image-id,Values=ami-082b3eca746b12a89" | jq -r '.Reservations[].Instances[].InstanceId'
+i-3f0409e97e7c74383
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ 
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf 
+resource "aws_instance" "ruby" {
+  ami           = var.ami
+  instance_type = var.instance_type
+  for_each      = var.name
+  key_name      = var.key_name
+  tags = {
+    Name = each.value
+  }
+}
+output "instances" {
+  value = aws_instance.ruby
+}
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ cat provider.tf 
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "4.15.0"
+    }
+  }
+}
+
+provider "aws" {
+  region                      = "us-east-1"
+  skip_credentials_validation = true
+  skip_requesting_account_id  = true
+
+  endpoints {
+    ec2 = "http://aws:4566"
+  }
+}
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ cat variables.tf 
+variable "name" {
+  type    = set(string)
+  default = ["jade-webserver", "jade-lbr", "jade-app1", "jade-agent", "jade-app2"]
+
+}
+variable "ami" {
+  default = "ami-0c9bfc21ac5bf10eb"
+}
+variable "instance_type" {
+  default = "t2.nano"
+}
+variable "key_name" {
+  default = "jade"
+
+}
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ cat jade.pem 
+-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAv3zlheGJwfwUQO3POivnimPUGiNVEfQzl0QVY1DJVm9nTNGO
+sUs3vgLcbOt+HhWD5xAWPVPvIX8CoNFNvBj3Ea3cHjRFswbgTAXzF98e42mqbDZ4
+Vqdo6++KuowEfTpNssHyCiq0y9OTC6QwliShGhlEl2UUXUsMx7dTvc6dV37VOkKo
+ZHOEcC+5NlKETFcEufKVZPCqtMOVouNj34/PaJQ+NAIf1y4FFyurSqQs/s+0Qf9L
+g+bV00yF0UFYhfKG1Hd1PIYTqYZ+bmo7FqeS8/M0BuHFisMqEqLcIqGGTADS2HaZ
+1mPyoULihCfr84ybwpv1zKVW2hZNHPzYcfEUiQIDAQABAoIBABpxiqzAvFUP6lLG
+byNPDtbl+ajGZP1pZiUnNMuV9h078zMA5B4IZMvrpI8HZ6TglGo4ptQ/SWWsdCt1
+3AX0GKKAtPDC3TaKO41OwQb0kVUXBtQ8zW+CB5OVbT4Huf2lKzewCtcWlghpJlmp
+ierMvNFYLfMOSrqmHj9c9MaLHYqzGVwrR+XHuWaOIRlvYyR0wAlT4lS4WNkJxTIn
+I5XKBe6SXDvkTwEwG+DV31Lvkn3R/IwyofdlFXzujRGLVxVEQRVwRqP1HANZGqJu
+mLjSFSRG/z9i1I5x7Wt+CfOiVGlmZH1Gx2zofW/EldBcmPnnhCsgAE5E5xoH1ZuN
+fuX+OBUCgYEA9uAKB31ZMU01QaW/BALS1Pj4FU47fP/fbbwo3LJMXk4o73LigSd6
+Uvfh4CaMvYTvzD31gcNdTQxiO1F/0lRxEALB6ctC4y2SYlsodkr03G4jWO5jtVzF
+ZuBjKIsJkjKPyNyA7ldKaTp5Ff9ynZzOts0+xkKu0JkXyK+66C/MrPMCgYEAxpDG
+1L/tefwPdK60xK2nGMFBEyQpiDicvGMtvGULq1F+YMjSJZHFmV+SM6oC0lDkqEzt
+QvBlaoKhjsBGVrPUbV7upwPSEtFdg6Adq86gZNwLGcbPGHNHZToXCqg1X+fq+Yfu
+aKVkbdCsKq9QhZ/PYfTD4+wQMDy+X9KmxCfcZ5MCgYApPKUQOTTj0lS6AXiVr+8N
+mgS+clHngEoO52Yf7zxoaD/YN2V0U2bQYw18xpOtuH3hrNvMcBiunQnvhJ6IQIie
+NwezCLvEfME94qIwmDasd006Np+7FKL4mzSU+hyAKifwUjzLExOf3h+JuCCqCR5S
+VJhOv6a5u0jIwenDjPBwVwKBgQCkkJpo+kPrpE5+6sggdLcW2ht/rKnLHvgvXZcr
+GyeHrbuqpOUdg+mbSkzWCqHaAnbvUQoWPzweAPO6ZnolI1b76gCqZI03UVNKYmoU
+2OOvk3qTu2QppGjYaUNtbqkFuiTQ96pMCj7okFgP7Eo05JSwX3X2MM/d2ooAyomx
+6kNNhwKBgFNrohMb4uKxqvnSXdMEDKMYJBJXJS//vxxiQMEx4OxYq82GYZpAK+/9
+IsuIR+2fYLP4tRFmF97E7yzD6ZzFMURhoZd7Z0ghmoIRwyzOTxSl0nKat6E8KNn5
+B6XX6VZ72wApMCSwidHMK/f6tZM0C5w4Gk8CFuhPwTHWhgJsPeZX
+-----END RSA PRIVATE KEY-----
+
+
+
+
+
+
+
+
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ cat main.tf
+resource "aws_instance" "ruby" {
+  ami           = var.ami
+  instance_type = var.instance_type
+  for_each      = var.name
+  key_name      = var.key_name
+  tags = {
+    Name = each.value
+  }
+}
+output "instances" {
+ value = aws_instance.ruby
+}
+resource "aws_instance" "jade-mw" {
+
+}
+
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) took 2s 
+❯ aws ec2 describe-instances --endpoint http://aws:4566  --filters "Name=image-id,Values=ami-082b3eca746b12a89" | jq -r '.Reservations[].Instances[].InstanceId'
+i-3f0409e97e7c74383
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ terraform import aws_instance.jade-mw i-3f0409e97e7c74383
+aws_instance.jade-mw: Importing from ID "i-3f0409e97e7c74383"...
+aws_instance.jade-mw: Import prepared!
+  Prepared aws_instance for import
+aws_instance.jade-mw: Refreshing state... [id=i-3f0409e97e7c74383]
+
+Import successful!
+
+The resources that were imported are shown above. These resources are now in
+your Terraform state and will henceforth be managed by Terraform.
+
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) took 2s 
+❯ terraform apply
+╷
+│ Error: Missing required argument
+│ 
+│   with aws_instance.jade-mw,
+│   on main.tf line 13, in resource "aws_instance" "jade-mw":
+│   13: resource "aws_instance" "jade-mw" {
+│ 
+│ "launch_template": one of `ami,instance_type,launch_template` must be specified
+╵
+╷
+│ Error: Missing required argument
+│ 
+│   with aws_instance.jade-mw,
+│   on main.tf line 13, in resource "aws_instance" "jade-mw":
+│   13: resource "aws_instance" "jade-mw" {
+│ 
+│ "instance_type": one of `instance_type,launch_template` must be specified
+╵
+╷
+│ Error: Missing required argument
+│ 
+│   with aws_instance.jade-mw,
+│   on main.tf line 13, in resource "aws_instance" "jade-mw":
+│   13: resource "aws_instance" "jade-mw" {
+│ 
+│ "ami": one of `ami,launch_template` must be specified
+╵
+
+
+
+
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) 
+❯ terraform show -json | jq '.values.root_module.resources[] | select(.type == "aws_instance" and .name == "jade-mw")'
+{
+  "address": "aws_instance.jade-mw",
+  "mode": "managed",
+  "type": "aws_instance",
+  "name": "jade-mw",
+  "provider_name": "registry.terraform.io/hashicorp/aws",
+  "schema_version": 1,
+  "values": {
+    "ami": "ami-082b3eca746b12a89",
+    "arn": "arn:aws:ec2:us-east-1::instance/i-3f0409e97e7c74383",
+    "associate_public_ip_address": true,
+    "availability_zone": "us-east-1a",
+    "capacity_reservation_specification": [],
+    "cpu_core_count": null,
+    "cpu_threads_per_core": null,
+    "credit_specification": [
+      {
+        "cpu_credits": "standard"
+      }
+    ],
+    "disable_api_termination": false,
+    "ebs_block_device": [],
+    "ebs_optimized": false,
+    "enclave_options": [],
+    "ephemeral_block_device": [],
+    "get_password_data": false,
+    "hibernation": null,
+    "host_id": null,
+    "iam_instance_profile": "",
+    "id": "i-3f0409e97e7c74383",
+    "instance_initiated_shutdown_behavior": "stop",
+    "instance_state": "running",
+    "instance_type": "t2.large",
+    "ipv6_address_count": 0,
+    "ipv6_addresses": [],
+    "key_name": "jade",
+    "launch_template": [],
+    "maintenance_options": [],
+    "metadata_options": [],
+    "monitoring": false,
+    "network_interface": [],
+    "outpost_arn": "",
+    "password_data": "",
+    "placement_group": "",
+    "placement_partition_number": null,
+    "primary_network_interface_id": "eni-343c0f29",
+    "private_dns": "ip-10-97-193-21.ec2.internal",
+    "private_ip": "10.97.193.21",
+    "public_dns": "ec2-54-214-196-94.compute-1.amazonaws.com",
+    "public_ip": "54.214.196.94",
+    "root_block_device": [
+      {
+        "delete_on_termination": true,
+        "device_name": "/dev/sda1",
+        "encrypted": false,
+        "iops": 0,
+        "kms_key_id": "",
+        "tags": {},
+        "throughput": 0,
+        "volume_id": "vol-4e8fe269",
+        "volume_size": 8,
+        "volume_type": "gp2"
+      }
+    ],
+    "secondary_private_ips": [],
+    "security_groups": [],
+    "source_dest_check": true,
+    "subnet_id": "subnet-34808625",
+    "tags": {
+      "Name": "jade-mw"
+    },
+    "tags_all": {
+      "Name": "jade-mw"
+    },
+    "tenancy": "default",
+    "timeouts": {
+      "create": null,
+      "delete": null,
+      "update": null
+    },
+    "user_data": null,
+    "user_data_base64": null,
+    "user_data_replace_on_change": null,
+    "volume_tags": null,
+    "vpc_security_group_ids": []
+  },
+  "sensitive_values": {
+    "capacity_reservation_specification": [],
+    "credit_specification": [
+      {}
+    ],
+    "ebs_block_device": [],
+    "enclave_options": [],
+    "ephemeral_block_device": [],
+    "ipv6_addresses": [],
+    "launch_template": [],
+    "maintenance_options": [],
+    "metadata_options": [],
+    "network_interface": [],
+    "root_block_device": [
+      {
+        "tags": {}
+      }
+    ],
+    "secondary_private_ips": [],
+    "security_groups": [],
+    "tags": {},
+    "tags_all": {},
+    "timeouts": {},
+    "vpc_security_group_ids": []
+  }
+}
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) took 2s 
+❯ aws ec2 describe-instances --filters "Name=tag:Name,Values=jade-mw" --query "Reservations[*].Instances[*].[ImageId, InstanceType, KeyName, Tags]" --endpoint http://aws:4566
+[
+    [
+        [
+            "ami-082b3eca746b12a89",
+            "t2.large",
+            "jade",
+            [
+                {
+                    "Key": "Name",
+                    "Value": "jade-mw"
+                }
+            ]
+        ]
+    ]
+]
+
+root in ~/terraform-projects/project-jade via 💠 default on ☁️  (us-east-1) took 5s 
+❯ cat main.tf
+resource "aws_instance" "ruby" {
+  ami           = var.ami
+  instance_type = var.instance_type
+  for_each      = var.name
+  key_name      = var.key_name
+  tags = {
+    Name = each.value
+  }
+}
+output "instances" {
+ value = aws_instance.ruby
+}
+resource "aws_instance" "jade-mw" {
+  ami="ami-082b3eca746b12a89"
+  instance_type = "t2.large"
+  tags = {
+    "Name"="jade-mw"
+  }
+    timeouts {}
+
+  }
