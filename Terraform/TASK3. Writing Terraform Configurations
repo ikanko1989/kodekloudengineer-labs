@@ -1,0 +1,467 @@
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  cat provider.tf 
+provider "aws" {
+  region="us-east-1"
+  access_key = "xxxxx"
+  secret_key = "xxxxxxxxxxxxxxxxxxxxxxxxx"
+}
+
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  cat vpc.tf 
+resource "aws_vpc" "KK_VPC" {
+  cidr_block = "10.0.0.0/16" 
+}
+
+
+
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Reusing previous version of hashicorp/aws from the dependency lock file
+- Using previously-installed hashicorp/aws v6.5.0
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform plan
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_vpc.KK_VPC will be created
+  + resource "aws_vpc" "KK_VPC" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.0.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = (known after apply)
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + region                               = "us-east-1"
+      + tags_all                             = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_vpc.KK_VPC will be created
+  + resource "aws_vpc" "KK_VPC" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.0.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = (known after apply)
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + region                               = "us-east-1"
+      + tags_all                             = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+aws_vpc.KK_VPC: Creating...
+aws_vpc.KK_VPC: Creation complete after 2s [id=vpc-0c8c359e6f92980a6]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+
+
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform show
+# aws_vpc.KK_VPC:
+resource "aws_vpc" "KK_VPC" {
+    arn                                  = "arn:aws:ec2:us-east-1:381491944432:vpc/vpc-0c8c359e6f92980a6"
+    assign_generated_ipv6_cidr_block     = false
+    cidr_block                           = "10.0.0.0/16"
+    default_network_acl_id               = "acl-01c34de2307752e4c"
+    default_route_table_id               = "rtb-074cf9a0251476e95"
+    default_security_group_id            = "sg-0ef66e3265667f010"
+    dhcp_options_id                      = "dopt-00387b1924c325758"
+    enable_dns_hostnames                 = false
+    enable_dns_support                   = true
+    enable_network_address_usage_metrics = false
+    id                                   = "vpc-0c8c359e6f92980a6"
+    instance_tenancy                     = "default"
+    ipv6_netmask_length                  = 0
+    main_route_table_id                  = "rtb-074cf9a0251476e95"
+    owner_id                             = "381491944432"
+    region                               = "us-east-1"
+    tags_all                             = {}
+}
+
+
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform state list
+aws_vpc.KK_VPC
+
+
+
+
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ✖ cat variables.tf 
+variable "instance_type" {
+  description = "EC2 instance type"
+  default     = "t2.micro"
+}
+
+variable "ami" {
+  description = "EC2 AMI ID"
+  default     = "ami-01b799c439fd5516a"
+}
+
+
+
+
+
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  cat main.tf 
+resource "aws_instance" "web" {
+  ami           = var.ami
+  instance_type = var.instance_type
+}
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Reusing previous version of hashicorp/aws from the dependency lock file
+- Using previously-installed hashicorp/aws v6.5.0
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform plan
+aws_vpc.KK_VPC: Refreshing state... [id=vpc-0c8c359e6f92980a6]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_instance.web will be created
+  + resource "aws_instance" "web" {
+      + ami                                  = "ami-01b799c439fd5516a"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + disable_api_stop                     = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + enable_primary_ipv6                  = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + host_resource_group_arn              = (known after apply)
+      + iam_instance_profile                 = (known after apply)
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_lifecycle                   = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t2.micro"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + region                               = "us-east-1"
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + spot_instance_request_id             = (known after apply)
+      + subnet_id                            = (known after apply)
+      + tags_all                             = (known after apply)
+      + tenancy                              = (known after apply)
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform apply
+aws_vpc.KK_VPC: Refreshing state... [id=vpc-0c8c359e6f92980a6]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_instance.web will be created
+  + resource "aws_instance" "web" {
+      + ami                                  = "ami-01b799c439fd5516a"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + disable_api_stop                     = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + enable_primary_ipv6                  = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + host_resource_group_arn              = (known after apply)
+      + iam_instance_profile                 = (known after apply)
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_lifecycle                   = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t2.micro"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + region                               = "us-east-1"
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + spot_instance_request_id             = (known after apply)
+      + subnet_id                            = (known after apply)
+      + tags_all                             = (known after apply)
+      + tenancy                              = (known after apply)
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+aws_instance.web: Creating...
+aws_instance.web: Still creating... [10s elapsed]
+aws_instance.web: Creation complete after 13s [id=i-09ea79ce6f14d2deb]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform show
+# aws_instance.web:
+resource "aws_instance" "web" {
+    ami                                  = "ami-01b799c439fd5516a"
+    arn                                  = "arn:aws:ec2:us-east-1:381491944432:instance/i-09ea79ce6f14d2deb"
+    associate_public_ip_address          = true
+    availability_zone                    = "us-east-1c"
+    disable_api_stop                     = false
+    disable_api_termination              = false
+    ebs_optimized                        = false
+    get_password_data                    = false
+    hibernation                          = false
+    id                                   = "i-09ea79ce6f14d2deb"
+    instance_initiated_shutdown_behavior = "stop"
+    instance_state                       = "running"
+    instance_type                        = "t2.micro"
+    ipv6_address_count                   = 0
+    ipv6_addresses                       = []
+    monitoring                           = false
+    placement_partition_number           = 0
+    primary_network_interface_id         = "eni-0c22eb04f81f088c2"
+    private_dns                          = "ip-172-31-23-108.ec2.internal"
+    private_ip                           = "172.31.23.108"
+    public_dns                           = "ec2-54-164-123-178.compute-1.amazonaws.com"
+    public_ip                            = "54.164.123.178"
+    region                               = "us-east-1"
+    secondary_private_ips                = []
+    security_groups                      = [
+        "default",
+    ]
+    source_dest_check                    = true
+    subnet_id                            = "subnet-0e3186892f7a27fc3"
+    tags_all                             = {}
+    tenancy                              = "default"
+    user_data_replace_on_change          = false
+    vpc_security_group_ids               = [
+        "sg-066e64936a4bf70aa",
+    ]
+
+    capacity_reservation_specification {
+        capacity_reservation_preference = "open"
+    }
+
+    cpu_options {
+        core_count       = 1
+        threads_per_core = 1
+    }
+
+    credit_specification {
+        cpu_credits = "standard"
+    }
+
+    enclave_options {
+        enabled = false
+    }
+
+    maintenance_options {
+        auto_recovery = "default"
+    }
+
+    metadata_options {
+        http_endpoint               = "enabled"
+        http_protocol_ipv6          = "disabled"
+        http_put_response_hop_limit = 2
+        http_tokens                 = "required"
+        instance_metadata_tags      = "disabled"
+    }
+
+    private_dns_name_options {
+        enable_resource_name_dns_a_record    = false
+        enable_resource_name_dns_aaaa_record = false
+        hostname_type                        = "ip-name"
+    }
+
+    root_block_device {
+        delete_on_termination = true
+        device_name           = "/dev/xvda"
+        encrypted             = false
+        iops                  = 3000
+        tags                  = {}
+        tags_all              = {}
+        throughput            = 125
+        volume_id             = "vol-03a38727f745a26da"
+        volume_size           = 8
+        volume_type           = "gp3"
+    }
+}
+
+# aws_vpc.KK_VPC:
+resource "aws_vpc" "KK_VPC" {
+    arn                                  = "arn:aws:ec2:us-east-1:381491944432:vpc/vpc-0c8c359e6f92980a6"
+    assign_generated_ipv6_cidr_block     = false
+    cidr_block                           = "10.0.0.0/16"
+    default_network_acl_id               = "acl-01c34de2307752e4c"
+    default_route_table_id               = "rtb-074cf9a0251476e95"
+    default_security_group_id            = "sg-0ef66e3265667f010"
+    dhcp_options_id                      = "dopt-00387b1924c325758"
+    enable_dns_hostnames                 = false
+    enable_dns_support                   = true
+    enable_network_address_usage_metrics = false
+    id                                   = "vpc-0c8c359e6f92980a6"
+    instance_tenancy                     = "default"
+    ipv6_netmask_length                  = 0
+    main_route_table_id                  = "rtb-074cf9a0251476e95"
+    owner_id                             = "381491944432"
+    region                               = "us-east-1"
+    tags                                 = {}
+    tags_all                             = {}
+}
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform state list
+aws_instance.web
+aws_vpc.KK_VPC
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  cat outputs.tf 
+output "web_instance_public_ip"{
+value = aws_instance.web.public_ip
+}
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️  (us-east-1) ➜  terraform apply
+aws_vpc.KK_VPC: Refreshing state... [id=vpc-0c8c359e6f92980a6]
+aws_instance.web: Refreshing state... [id=i-09ea79ce6f14d2deb]
+
+Changes to Outputs:
+  + web_instance_public_ip = "54.164.123.178"
+
+You can apply this plan to save these new output values to the Terraform state, without changing any real infrastructure.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+web_instance_public_ip = "54.164.123.178"
+
+root@aws-client ~/terraform-projects via 💠 default on ☁️ 
