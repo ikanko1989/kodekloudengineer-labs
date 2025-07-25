@@ -465,3 +465,81 @@ Outputs:
 web_instance_public_ip = "54.164.123.178"
 
 root@aws-client ~/terraform-projects via 💠 default on ☁️ 
+
+
+
+
+
+
+
+
+root@aws-client ~/ec2_module via 💠 default on ☁️  (us-east-1) ➜  cat variables.tf 
+variable "instance_type" {
+type=string
+}
+
+variable "ami" {
+type=string
+}
+
+variable "instance_name" {
+type=string
+}
+
+root@aws-client ~/ec2_module via 💠 default on ☁️  (us-east-1) ➜  cat outputs.tf 
+output "instance_public_ip" {
+  description = "The public IP of the instance"
+  value       = aws_instance.web-2.public_ip
+}
+
+root@aws-client ~/ec2_module via 💠 default on ☁️  (us-east-1) ➜  cat main.tf 
+resource "aws_instance" "web-2" {
+  ami                     = var.ami
+  instance_type           = var.instance_type
+  tags = {
+    Name = var.instance_name
+  }
+}
+
+
+
+
+
+root@aws-client ~/ec2-instance  via 💠 default on ☁️  (us-east-1) ➜  cat main.tf 
+provider "aws" {
+  region = "us-east-1"
+}
+
+module "my_ec2_instance" {
+  source         = "../ec2_module"     # Path to your reusable module
+  ami            = var.ami
+  instance_type  = var.instance_type
+  instance_name  = var.instance_name
+}
+
+output "instance_public_ip" {
+  description = "Public IP of the EC2 instance"
+  value       = module.my_ec2_instance.instance_public_ip
+}
+
+
+root@aws-client ~/ec2-instance e via 💠 default on ☁️  (us-east-1) ➜  cat variables.tf 
+
+variable "ami" {
+  description = "AMI ID to use for the EC2 instance"
+  type        = string
+  default     = "t2.micro"
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "ami-0123456789abcdef0"
+}
+
+variable "instance_name" {
+  description = "Tag name for the EC2 instance"
+  type        = string
+  default     = "web-server-default"
+}
+
