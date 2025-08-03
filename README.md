@@ -8,6 +8,8 @@ I've organized the labs into areas:
 ## * Git 
 ## * Jenkins 
 ## * Cloud(AWS) 
+## * Terraform
+
 Each area contains 4 levels, with progressively more challenging labs that range from beginner to advanced.  
 The labs cover both questions and answers to help me build a strong, hands-on understanding of these tools.
 
